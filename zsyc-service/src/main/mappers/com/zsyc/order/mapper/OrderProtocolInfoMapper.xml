@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.order.mapper.OrderProtocolInfoMapper" >
+    <select id="getOrderProtocolInfo" resultType="com.zsyc.order.po.OrderProtocolInfoPo">
+        select * from order_protocol_info where member_address_id in
+        <foreach collection="memberAddressList" item="memberAddress" index="index" separator="," open="(" close=")">
+            #{memberAddress.id}
+        </foreach>
+        order by update_time desc
+    </select>
+
+    <resultMap id="getAllProtocolByStoreIdResultMap" type="com.zsyc.order.po.OrderProtocolInfoPo">
+        <id column="id" property="id"></id>
+        <result column="protocol_name" property="protocolName"></result>
+        <result column="member_address_id" property="memberAddressId"></result>
+        <result column="store_id" property="storeId"></result>
+        <result column="protocol_no" property="protocolNo"></result>
+        <result column="deposit_amount" property="depositAmount"></result>
+        <result column="deposit_current" property="depositCurrent"></result>
+        <result column="num" property="num"></result>
+        <result column="type" property="type"></result>
+        <result column="last_rent_payment_time" property="lastRentPaymentTime"></result>
+        <collection property="orderProtocolGoodsPos" column="protocol_no" select="com.zsyc.order.mapper.OrderProtocolGoodsMapper.getProtocolGoodsByNo" ></collection>
+    </resultMap>
+
+    <select id="getAllProtocolByStoreId" resultMap="getAllProtocolByStoreIdResultMap">
+        select * from order_protocol_info
+        <where>
+            store_id = #{orderProtocolInfoVo.storeId}
+            <if test="orderProtocolInfoVo.protocolNo != null and orderProtocolInfoVo.protocolNo != ''">
+                and protocol_no = #{orderProtocolInfoVo.protocolNo}
+            </if>
+            <if test="orderProtocolInfoVo.memberAddressId != null">
+                and member_address_id = #{orderProtocolInfoVo.memberAddressId}
+            </if>
+        </where>
+        order by update_time desc
+    </select>
+
+    <update id="updateDepositCurrent">
+        update order_protocol_info set deposit_current = deposit_current - #{amount} where protocol_no = #{protocolNo}
+    </update>
+
+    <update id="updateOrderProtocolLastRentPaymentTime">
+        update order_protocol_info set last_rent_payment_time = #{now} where protocol_no = #{protocolNo}
+    </update>
+
+</mapper>

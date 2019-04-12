@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.order.mapper.OrderProtocolGoodsMapper" >
+    <update id="updateGoodsNum">
+        update order_protocol_goods set num = num - #{num} where id = #{id}
+    </update>
+    
+    <resultMap id="getProtocolGoodsByNo" type="com.zsyc.order.po.OrderProtocolGoodsPo">
+        <id column="id" property="id"></id>
+        <result column="protocol_no" property="protocolNo"></result>
+        <result column="sku" property="sku"></result>
+        <result column="num" property="num"></result>
+        <result column="price" property="price"></result>
+    </resultMap>
+
+
+    <select id="getProtocolGoodsByNo" parameterType="string" resultMap="getProtocolGoodsByNo">
+          select * from order_protocol_goods where protocol_no = #{protocolNo}
+    </select>
+
+</mapper>

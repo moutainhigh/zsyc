@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.member.mapper.MemberBalanceLogMapper" >
+    <resultMap id="BaseResultMap" type="com.zsyc.member.entity.MemberBalanceLog" >
+        <result column="id" property="id" jdbcType="INTEGER" />
+    </resultMap>
+
+    <select id="getBalanceLogList" resultMap="BaseResultMap">
+        select mb.* from member_balance_log mb, member_info mi where mb.member_id = mi.id
+        <if test="memberId != null">
+            and mi.id = #{memberId}
+        </if>
+        <if test="name != null">
+            and mi.nick_name like  CONCAT( #{name}, '%')
+        </if>
+        <if test="telephone != null">
+            and mi.telephone like  CONCAT( #{telephone}, '%')
+        </if>
+        order by mb.create_time desc
+    </select>
+
+</mapper>

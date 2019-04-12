@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.member.mapper.MemberAddressStoreMapper" >
+    <resultMap id="BaseResultMap" type="com.zsyc.member.vo.MemberAddressStoreVo" >
+        <result column="id" property="id" jdbcType="INTEGER" />
+    </resultMap>
+
+    <insert id="insertList" parameterType="java.util.List" >
+        insert into member_address_store
+        (id, address_id, store_id, address_type, create_time, create_user_id, update_time, update_user_id, is_del, is_custom)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.id},
+            #{item.addressId},
+            #{item.storeId},
+            #{item.addressType},
+            #{item.createTime},
+            #{item.createUserId},
+            #{item.updateTime},
+            #{item.updateUserId},
+            #{item.isDel},
+            #{item.isCustom}
+            )
+        </foreach>
+    </insert>
+
+    <select id="getMemberAddressStoreAndSoreType" resultMap="BaseResultMap">
+        select m.*, s.store_type_id as storeTypeId, s.store_name as storeName, s.phone, s.address from store_info s, member_address_store m
+          where m.store_id = s.id and m.address_id =  #{addressId}
+    </select>
+
+    <update id="updateUserType">
+        update member_address_store mas
+        set mas.address_type = #{addressType},
+            mas.is_custom = #{isCustom}
+        where exists (select 1 from member_address ma where ma.id = mas.address_id and ma.id = #{addressId})
+    </update>
+
+
+</mapper>

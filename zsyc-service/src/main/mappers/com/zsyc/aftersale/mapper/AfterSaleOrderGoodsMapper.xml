@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.aftersale.mapper.AfterSaleOrderGoodsMapper">
+    <!--部分缺货接口-->
+    <select id="selectGoodsPrice" resultType="com.zsyc.order.entity.OrderGoods">
+    select price from order_goods where order_sub_id=#{ordersubId} and sku=#{sku}
+</select>
+    <update id="updateOrderSub">
+    update order_sub_info set order_status="SHORTAGE" where id=#{subId}
+</update>
+    <update id="updateOrderGoods">
+    UPDATE order_goods SET STATUS="SHORTAGE" WHERE order_sub_id=#{subId}
+</update>
+
+
+    <!--根据子订单id查找子订单商品数据-->
+    <select id="selectAfterSaleOrderGoods" resultType="com.zsyc.aftersale.po.AterSaleOrderVo">
+ SELECT goods_info.`goods_name` AS goodsName,
+ order_goods.`price` AS price,
+ order_goods.`num` AS num,
+ order_sub_info.`order_status` AS STATUS,
+ order_sub_info.book_start_time AS bookStarTime,
+  goods_info.`picture` AS img
+  FROM
+order_goods,goods_info,order_sub_info
+WHERE order_goods.`order_sub_id`=#{subId}
+AND goods_info.`sku`=order_goods.`sku`
+AND order_sub_info.`id`=order_goods.`order_sub_id`
+    </select>
+
+    <!--根据子订单id修改子订单的客服处理状态-->
+    <update id="updateSubOrderemark">
+    update order_sub_info set backend_remark=#{backendRemark} where id=#{subId}
+    </update>
+
+    <!--根据售后单号查询所有信息-->
+    <select id="selectAfterSaleOrderOrderNo" resultType="com.zsyc.aftersale.po.BackendAfterSaleOrderPo">
+  SELECT
+  after_sale_order_goods.id as id,
+  after_sale_order_goods.`after_sale_no` AS afterSaleNo,
+  after_sale_order.`order_sub_id` AS orderSubId,
+  after_sale_order_goods.`sku` AS sku,
+  after_sale_order_goods.`original` AS original,
+  after_sale_order_goods.`num` AS num,
+  after_sale_order_goods.`refund_amount` AS price,
+  goods_info.`goods_name` AS goodsName,
+  goods_info.picture as img,
+  after_sale_order.`remark` AS 	remark,
+  after_sale_order.`staff_name` AS staffName,
+  after_sale_order.`staff_phone` AS staffPhone
+  FROM after_sale_order_goods,after_sale_order,goods_info WHERE after_sale_order_goods.after_sale_no=#{afterSaleNo}
+  AND after_sale_order_goods.`after_sale_no`=after_sale_order.`after_sale_no`
+	AND after_sale_order_goods.`sku`=goods_info.`sku`
+
+</select>
+    <select id="selectAfterSaleOrderSubId" resultType="com.zsyc.aftersale.po.BackendAfterSaleOrderPo">
+  SELECT
+  after_sale_order_goods.`after_sale_no` AS afterSaleNo,
+  after_sale_order.`order_sub_id` AS orderSubId,
+  after_sale_order_goods.`sku` AS sku,
+  after_sale_order_goods.`original` AS original,
+  after_sale_order_goods.`num` AS num,
+  after_sale_order_goods.`refund_amount` AS refundAmount,
+  goods_info.`goods_name` AS goodsName,
+  goods_info.picture as img,
+  after_sale_order.`remark` AS 	remark,
+  after_sale_order.`staff_name` AS staffPhone,
+  after_sale_order.`staff_phone` AS staffName
+       FROM after_sale_order_goods,after_sale_order,goods_info WHERE after_sale_order.`order_sub_id`=#{subId}
+  AND after_sale_order_goods.`after_sale_no`=after_sale_order.`after_sale_no`
+	AND after_sale_order_goods.`sku`=goods_info.`sku`
+
+</select>
+
+    <select id="selectAfterSaleAll" resultType="com.zsyc.aftersale.entity.AfterSaleOrder">
+        select
+        *
+        from
+        after_sale_order,order_sub_info
+        WHERE after_sale_order.`order_sub_id`=order_sub_info.`id`
+        and after_sale_order.status !="PROCESSED"
+        <if test="afterSaleNo!=null">
+            and after_sale_no=#{afterSaleNo}
+        </if>
+        <if test="subId!=null">
+            and order_sub_info.`order_no`=#{subId}
+        </if>
+        <if test="staffName!=null">
+            and staff_name=#{staffName}
+        </if>
+        <if test="Phone!=null">
+            and staff_phone=#{Phone}
+        </if>
+
+
+
+    </select>
+
+    <update id="updateAfterStatus">
+    update after_sale_order set status=#{status} where id=#{afterId}
+</update>
+
+
+
+    <!--根据配送员名字查找售后单号-->
+    <select id="selectAfterSaleStaffName" resultType="com.zsyc.aftersale.entity.AfterSaleOrder">
+        select after_sale_no from after_sale_order where staff_name=#{staffName}
+    </select>
+
+    <!--根据配送员名字查找售后单号-->
+    <select id="selectAfterSalePhone" resultType="com.zsyc.aftersale.entity.AfterSaleOrder">
+        select after_sale_no from after_sale_order where staff_phone=#{phone}
+    </select>
+
+    <!--根据子订单号查子订单id-->
+    <select id="selectOrderNoSubId" resultType="com.zsyc.order.entity.OrderSubInfo">
+        select  *  from order_sub_info where id=#{subId}
+    </select>
+
+    <select id="selectGoodsStoreIdPrice" resultType="com.zsyc.goods.entity.GoodsStorePrice">
+select * from goods_store_price where store_id=#{storeId} and sku=#{sku}
+</select>
+
+
+    <select id="checkKuaiJie" resultType="com.zsyc.aftersale.po.BackendAfterSaleOrderPo">
+
+ SELECT
+ after_sale_order_goods.id as id,
+  after_sale_order_goods.`after_sale_no` AS afterSaleNo,
+  after_sale_order.`order_sub_id` AS orderSubId,
+  after_sale_order_goods.`sku` AS sku,
+  after_sale_order_goods.`original` AS original,
+  after_sale_order_goods.`num` AS num,
+  after_sale_order_goods.`refund_amount` AS price,
+  goods_info.`goods_name` AS goodsName,
+  goods_info.picture as img,
+  after_sale_order.`remark` AS 	remark,
+  after_sale_order.`staff_name` AS staffName,
+  after_sale_order.`staff_phone` AS staffPhone
+       FROM after_sale_order_goods,after_sale_order,goods_info WHERE after_sale_order_goods.after_sale_no=#{afterSaleNo}
+  AND after_sale_order_goods.`after_sale_no`=after_sale_order.`after_sale_no`
+	AND after_sale_order_goods.`sku`=goods_info.`sku`
+     and after_sale_order_goods.parent_sku=#{parentSku} and after_sale_order_goods.order_sub_id=#{subId}
+
+    </select>
+
+    <select id="checkParentSku" resultType="com.zsyc.aftersale.po.BackendAfterSaleOrderPo">
+  SELECT
+  after_sale_order_goods.`after_sale_no` AS afterSaleNo,
+  after_sale_order.`order_sub_id` AS orderSubId,
+  after_sale_order_goods.`sku` AS sku,
+  after_sale_order_goods.`original` AS original,
+  after_sale_order_goods.`num` AS num,
+  after_sale_order_goods.`refund_amount` AS refundAmount,
+  goods_info.`goods_name` AS goodsName,
+  goods_info.picture as img,
+  after_sale_order.`remark` AS 	remark,
+  after_sale_order.`staff_name` AS staffName,
+  after_sale_order.`staff_phone` AS staffPhone
+       FROM after_sale_order_goods,after_sale_order,goods_info WHERE after_sale_order_goods.after_sale_no=#{afterSaleNo}
+  AND after_sale_order_goods.`after_sale_no`=after_sale_order.`after_sale_no`
+	AND after_sale_order_goods.`sku`=goods_info.`sku`
+     and after_sale_order_goods.parent_sku is null and after_sale_order_goods.order_sub_id=#{subId} and after_sale_order_goods.num IS NOT NULL
+    </select>
+
+<update id="updateAfterSaleOrderRemark">
+    update after_sale_order set remark=#{remark} where id=#{id}
+</update>
+
+
+<update id="doneService">
+     update after_sale_order set status="PROCESSED" where id=#{id}
+</update>
+    <update id="subProcessed">
+        update order_sub_info set order_status="PROCESSED" where id=#{subId}
+    </update>
+
+    <select id="selectSaleOrder" resultType="com.zsyc.aftersale.entity.AfterSaleOrder">
+        select  * from after_sale_order where id=#{id}
+    </select>
+
+
+
+
+</mapper>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>公众号授权</title>
+    <script>
+        function myfunction(){
+
+            var url = "http://192.168.0.107:8088/api/account/weixinRedirectAccept2";
+
+            var httpRequest = new XMLHttpRequest();//第一步：建立所需的对象
+            httpRequest.open('GET', url, true);//第二步：打开连接  将请求参数写在url中
+            httpRequest.send();//第三步：发送请求  将请求参数写在URL中
+            /**
+             * 获取数据后的处理程序
+             */
+            // httpRequest.onreadystatechange = function () {
+            //     if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+            //         var json = httpRequest.responseText;//获取到json字符串，还需解析
+            //         console.log(json);
+            //     }
+            // };
+        }
+        //window.onload = myfun();//可不加括号
+    </script>
+</head>
+<body onload="myfunction()">
+<h1>公众号授权test</h1>
+</body>
+</html>

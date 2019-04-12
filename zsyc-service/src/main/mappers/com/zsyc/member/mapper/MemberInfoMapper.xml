@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.member.mapper.MemberInfoMapper" >
+    <resultMap id="BaseResultMap" type="com.zsyc.member.entity.MemberInfo" >
+        <result column="id" property="id" jdbcType="INTEGER" />
+    </resultMap>
+    <select id="getMemberList"  resultType="com.zsyc.member.vo.MemberInfoVo">
+        select mi.*, ma.location_address as address from member_info mi
+          join member_address ma on mi.id = ma.member_id
+          join member_address_store mas on mas.address_id = ma.id
+            <if test="storeId != null">
+                and mas.store_id = #{storeId, jdbcType = VARCHAR}
+            </if>
+            <if test="name != null">
+                and mi.nick_name like  CONCAT( #{name}, '%')
+            </if>
+            <if test="beginTime != null">
+                and mi.create_time &gt;= #{beginTime, jdbcType = VARCHAR}
+            </if>
+            <if test="endTime != null">
+                and mi.create_time &lt;=  #{endTime, jdbcType = VARCHAR}
+            </if>
+            <if test="telephone != null">
+                and mi.telephone like  CONCAT( #{telephone}, '%')
+            </if>
+            <if test="status != null">
+                and mi.status = #{status, jdbcType = VARCHAR}
+            </if>
+                and mi.is_del = 0
+    </select>
+
+
+    <select id="getMemberByUnionIdOrOpenId"  resultMap="BaseResultMap">
+          select * from member_info mi where exists
+              (select 1 from  zs_account_bind zas where zas.bind_account = #{openId} and zas.account_id = mi.account_id
+            and zas.type = #{type})
+    </select>
+
+</mapper>

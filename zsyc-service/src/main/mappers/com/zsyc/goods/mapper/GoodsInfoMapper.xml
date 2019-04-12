@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.goods.mapper.GoodsInfoMapper" >
+
+    <insert id="insertGoodsList" parameterType="java.util.List">
+        insert into goods_info (goods_name,sku,spu,goods_type,picture,status,create_user_id,create_time,is_del,description,goods_style) values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.goodsName},#{item.sku},#{item.spu},#{item.goodsType},#{item.picture},#{item.status},#{item.createUserId},
+            #{item.createTime},#{item.isDel},#{item.description},#{item.goodsStyle})
+        </foreach>
+    </insert>
+
+    <select id="selectGoodInfoList" resultType="com.zsyc.goods.bo.GoodsInfoListBO">
+      select g.id,g.goods_name as goodsName,g.sku,g.spu,g.picture,g.update_time as updateTime,g.update_user_id as updateUserId,g.create_user_id as createUserId,g.create_time as createTime,
+             g.is_del as isDel,g.goods_style as goodsStyle,b.brand_name as brandName,g.status,g.goods_type as goodsType from goods_info g inner join goods_brand_relation r on g.sku=r.sku
+        left join goods_brand b on r.brand_code = b.brand_code where g.is_del=#{is_del} and g.goods_type=#{goods_type}
+        <if test="goods_search.goodsName != null">
+            and g.goods_name like concat(concat('%',#{goods_search.goodsName}),'%')
+        </if>
+        <if test="goods_search.sku != null">
+            and g.sku like concat(concat('%',#{goods_search.sku}),'%')
+        </if>
+        <if test="goods_search.spu != null">
+            and g.spu=#{goods_search.spu}
+        </if>
+        <if test="goods_search.status != null">
+            and g.status=#{goods_search.status}
+        </if>
+        <if test="goods_search.goodsStyle != null">
+            and g.goods_style=#{goods_search.goodsStyle}
+        </if>
+        <if test="goods_search.skus!=null and goods_search.skus.size() > 0">
+            and g.sku in
+            <foreach collection="goods_search.skus" item="item" open="(" close=")" separator=",">
+                (#{item})
+            </foreach>
+        </if>
+        <if test="goods_search.beforeTime != null and goods_search.afterTime==null">
+            <![CDATA[ and g.create_time >= #{goods_search.beforeTime}]]>
+        </if>
+        <if test="goods_search.afterTime != null and goods_search.beforeTime==null">
+            <![CDATA[ and g.create_time <= #{goods_search.afterTime}]]>
+        </if>
+        <if test="goods_search.beforeTime != null and goods_search.afterTime!=null">
+            and g.create_time between #{goods_search.beforeTime} and #{goods_search.afterTime}
+        </if>
+        order by g.create_time desc
+    </select>
+
+    <select id="selectGoodInfoListByStyle" resultType="com.zsyc.goods.bo.GoodsInfoListBO">
+        select g.id,g.goods_name as goodsName,g.sku,g.spu,g.picture,g.update_time as updateTime,g.update_user_id as updateUserId,g.create_user_id as createUserId,g.create_time as createTime,
+               g.is_del as isDel,g.goods_style as goodsStyle,b.brand_name as brandName,g.status,g.goods_type as goodsType from goods_info g inner join goods_brand_relation r on g.sku=r.sku
+        left join goods_brand b on r.brand_code = b.brand_code where g.is_del=#{is_del} and g.goods_type=#{goods_type} and g.goods_style in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            (#{item})
+        </foreach>
+    </select>
+
+    <select id="selectGoodsInfo" resultType="com.zsyc.goods.bo.GoodsInfoListBO">
+        select g.id,g.goods_name as goodsName,g.sku,g.spu,g.picture,g.update_time as updateTime,g.update_user_id as updateUserId,g.create_user_id as createUserId,g.create_time as createTime,
+               g.is_del as isDel,g.goods_style as goodsStyle,b.brand_name as brandName,b.brand_code as brandCode,g.status,g.goods_type as goodsType from goods_info g inner join goods_brand_relation r on g.sku=r.sku
+          left join goods_brand b on r.brand_code = b.brand_code where g.is_del=#{is_del} and g.sku=#{sku} limit 1
+    </select>
+
+    <select id="selectGoodInfoTypeList" resultType="com.zsyc.goods.bo.GoodsInfoListBO">
+        select g.id,g.goods_name as goodsName,g.sku,g.spu,g.picture,g.update_time as updateTime,g.update_user_id as updateUserId,g.create_user_id as createUserId,g.create_time as createTime,
+               g.is_del as isDel,g.goods_style as goodsStyle,b.brand_name as brandName,g.status,g.goods_type as goodsType from goods_info g inner join goods_brand_relation r on g.sku=r.sku
+           left join goods_brand b on r.brand_code = b.brand_code where g.is_del=#{is_del} and g.goods_type=#{goods_type}
+    </select>
+
+    <select id="selectChildGoodsInfoList" resultType="com.zsyc.goods.bo.GoodsInfoListBO">
+        select g.id,g.goods_name as goodsName,g.sku,g.spu,g.picture,g.update_time as updateTime,g.update_user_id as updateUserId,g.create_user_id as createUserId,g.create_time as createTime,
+               g.is_del as isDel,g.goods_style as goodsStyle,b.brand_name as brandName,g.status,g.goods_type as goodsType from goods_info g inner join goods_brand_relation r on g.sku=r.sku
+        left join goods_brand b on r.brand_code = b.brand_code where g.is_del=#{is_del} and g.status=#{status} and g.sku in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            (#{item})
+        </foreach>
+    </select>
+
+    <select id="selectGoodsInfoBySku" resultType="com.zsyc.goods.entity.GoodsInfo">
+        select id,goods_name as goodsName,picture,sku,goods_type as goodsType,picture,status,goods_style as goodsStyle from goods_info where goods_type=#{goods_type} and is_del=#{is_del}
+        <if test="sku != null">
+            and sku like concat(#{sku},'%')
+        </if>
+        order by create_time desc
+    </select>
+
+    <update id="updateGoodsInfo" parameterType="Map">
+        update goods_info
+        <if test="params.msg == 'onSale'">
+            set status = 'ON_SALE'
+        </if>
+        <if test="params.msg == 'offSale'">
+            set status = 'OFF_SALE'
+        </if>
+        where id in
+        <foreach collection="params.ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getGoodsCustom" resultType="com.zsyc.goods.vo.GoodCustomVo">
+        select gcp.price as price, gi.* from goods_info gi
+            JOIN goods_custom_price gcp ON gi.sku = gcp.sku and gcp.store_id = #{storeId} and gcp.address_id = #{addressId}
+            JOIN goods_category_relation gcr on gcr.sku = gi.sku
+        <if test="categoryId != null">
+            and gcr.category_id = #{categoryId}
+        </if>
+    </select>
+</mapper>

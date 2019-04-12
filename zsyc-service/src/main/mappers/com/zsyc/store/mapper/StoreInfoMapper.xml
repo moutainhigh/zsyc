@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.store.mapper.StoreInfoMapper" >
+    <resultMap id="BaseResultMap" type="com.zsyc.store.vo.StoreInfoVo" >
+        <result column="id" property="id" jdbcType="INTEGER" />
+    </resultMap>
+
+    <select id="getStoreList"  resultMap="BaseResultMap">
+        select * from store_info si where exists (select 1 from sys_role_store srs where srs.store_id = si.id
+            and srs.role_id in
+            <foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            )
+            <if test="storeName != null">
+                and si.store_name like  CONCAT(#{storeName},'%')
+            </if>
+            <if test="storeNo != null">
+                and si.store_no =  #{storeNo, jdbcType = VARCHAR}
+            </if>
+            <if test="adcode != null">
+                and si.adcode like  CONCAT(#{adcode},'%')
+            </if>
+            <if test="storeType != null">
+                and si.store_type_id =  #{storeType, jdbcType = VARCHAR}
+            </if>
+            and si.is_del = 0
+            <!--<if test="beginTime != null">-->
+                <!--and si.create_time &gt;= #{beginTime, jdbcType = VARCHAR}-->
+            <!--</if>-->
+            <!--<if test="endTime != null">-->
+                <!--and si.create_time &lt;=  #{endTime, jdbcType = VARCHAR}-->
+            <!--</if>-->
+    </select>
+
+    <select id="getStoreList2"  resultMap="BaseResultMap">
+        select * from store_info si where not exists (select 1 from sys_role_store srs where srs.store_id = si.id
+          and srs.role_id in
+        <foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+          )
+        <if test="adcode != null">
+            and si.adcode like  CONCAT(#{adcode},'%')
+        </if>
+        <if test="storeTypeId != null">
+            and store_type_id =  #{storeTypeId, jdbcType = VARCHAR}
+        </if>
+    </select>
+
+    <select id="getStoreList3"  resultMap="BaseResultMap">
+        select * from store_info si where 1  = 1
+        <if test="adcode != null">
+            and si.adcode like  CONCAT(#{adcode},'%')
+        </if>
+        <if test="storeTypeId != null">
+            and store_type_id =  #{storeTypeId, jdbcType = VARCHAR}
+        </if>
+    </select>
+
+
+    <update id="storeGoodStock">
+        update goods_store_stock
+        <if test="type == 1">
+            set total = total + #{num, jdbcType = INTEGER}
+        </if>
+        <if test="type == 2">
+            set total = total - #{num, jdbcType = INTEGER}
+        </if>
+        where sku = #{sku,jdbcType = VARCHAR} and store_id = #{storeId,jdbcType = INTEGER}
+    </update>
+
+
+    <update id="deleteStoreByIds" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update store_info
+            <set>
+                is_del = 1
+            </set>
+            <set>
+                update_user_id = #{loginUserId}
+            </set>
+            <set>
+                update_time = now()
+            </set>
+            where id = #{item}
+        </foreach>
+    </update>
+
+    <select id="getStoreByIds" resultMap="BaseResultMap">
+        select * from store_info where id in
+        <foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+
+    <select id="getOpenTimeAndCloseTime" resultMap="BaseResultMap">
+        select si.id as storeId, sot.open_time as openTime, sot.close_time as closeTime, gi.id as goodId, gi.goods_name as goodName
+        from  store_info si
+              JOIN  store_open_time sot on si.id = sot.store_id and si.`status`='normal' and si.is_del = 0
+              JOIN goods_store_price gsp on gsp.store_id = si.id
+              JOIN goods_info gi on gsp.sku = gi.sku and gi.is_del = 0
+    </select>
+
+	<select id ="getIntervalStore" resultType="com.zsyc.store.entity.StoreInfo">
+		select t.id,t.interval_time,t.interval_state,t.preset_time from store_info t where is_del = 0 and interval_state=1
+	</select>
+</mapper>

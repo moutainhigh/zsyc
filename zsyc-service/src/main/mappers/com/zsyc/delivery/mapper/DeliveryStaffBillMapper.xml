@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.delivery.mapper.DeliveryStaffBillMapper" >
+    <resultMap id="BaseResultMap" type="com.zsyc.delivery.vo.DeliveryStaffVo">
+        <result column="id" property="id" jdbcType="INTEGER" />
+    </resultMap>
+
+    <insert id="insertList">
+        INSERT INTO delivery_staff_bill
+        (master_id, bill_time, bill_salary, bill_status, turn_in, turn_in_status, create_time, create_user_id, update_time,
+        update_user_id, is_del)
+        VALUES
+        <foreach collection ="list" item="bill" separator =",">
+            (#{bill.masterId},
+            #{bill.billTime},
+            #{bill.billSalary},
+            #{bill.billStatus},
+            #{bill.turnIn},
+            #{bill.turnInStatus},
+            #{bill.createTime},
+            #{bill.createUserId},
+            #{bill.updateTime},
+            #{bill.updateUserId},
+            #{bill.isDel}
+             )
+        </foreach >
+    </insert>
+
+
+
+    <select id="deliveryStaffBill" resultType="com.zsyc.delivery.po.DeliverStaffBillBo">
+        SELECT
+        delivery_staff.id AS id,
+        delivery_staff.master_name  AS masterName,
+        delivery_staff.account_id AS accountId,
+        delivery_staff.phone AS phone,
+        delivery_staff.papers AS papers,
+        delivery_staff.parent_id AS parentId,
+        delivery_staff. is_leader AS isLeader,
+        delivery_staff. master_type AS masterType,
+        delivery_staff. create_time AS createTime,
+        delivery_staff. is_del AS  isDel
+        FROM delivery_staff,delivery_staff_bill,store_delivery_relation
+
+        WHERE delivery_staff.id=delivery_staff_bill.master_id AND store_delivery_relation.`master_id`=delivery_staff.`id`
+        <if test="storeId!=null">
+            and store_delivery_relation.store_id=#{storeId}
+        </if>
+
+
+
+         <if test="masterName!=null">
+         and delivery_staff.master_name like CONCAT(#{masterName},'%')
+         </if>
+         <if test="phone!=null">
+          and  delivery_staff.phone=#{phone}
+         </if>
+        <if test="billStatus!=null">
+          and  delivery_staff_bill.bill_status=#{billStatus}
+        </if>
+        <if test="turnInStatus!=null">
+         and   delivery_staff_bill.turn_in_status=#{turnInStatus}
+        </if>
+        and delivery_staff_bill.is_del=0
+        and delivery_staff.is_del=0
+        group by id
+    </select>
+
+
+    <update id="updateDeliverAll">
+        update  delivery_staff
+        set update_time=NOW()
+        <if test="newMasterName!=null">
+            ,master_name=#{newMasterName}
+        </if>
+        <if test="phone!=null">
+            ,phone=#{phone}
+        </if>
+        <if test="papers!=null">
+            ,papers=#{papers}
+        </if>
+        <if test="isLeader!=null">
+            ,is_del=#{isLeader}
+        </if>
+        where id=#{id}
+
+    </update>
+
+
+    <!--SELECT * FROM delivery_staff AS s INNER JOIN delivery_staff_bill AS b ON (s.id = b.master_id)-->
+    <!--where 1=1-->
+
+    <!--&lt;!&ndash;<if test="phone!=null">&ndash;&gt;-->
+    <!--&lt;!&ndash;and  s.phone=#{phone}&ndash;&gt;-->
+    <!--&lt;!&ndash;</if>&ndash;&gt;-->
+    <!--&lt;!&ndash;<if test="billStatus!=null">&ndash;&gt;-->
+    <!--&lt;!&ndash;and  b.bill_status=#{billStatus}&ndash;&gt;-->
+    <!--&lt;!&ndash;</if>&ndash;&gt;-->
+    <!--&lt;!&ndash;<if test="turnInStatus!=null">&ndash;&gt;-->
+    <!--&lt;!&ndash;and   b.turn_in_status=#{turnInStatus}&ndash;&gt;-->
+    <!--&lt;!&ndash;</if>&ndash;&gt;-->
+    <!--group by s.id-->
+
+
+    <select id="selectDeliverStaffBillAll" resultType="com.zsyc.delivery.po.DeliverStaffBillCo">
+        select * from delivery_staff_bill where  master_id=#{deliveryStaffs1Id}
+    </select>
+
+    <select id="stroedeliverId" resultType="com.zsyc.store.entity.StoreDeliveryRelation">
+       select * from  store_delivery_relation where master_id=#{masterId}
+    </select>
+
+</mapper>

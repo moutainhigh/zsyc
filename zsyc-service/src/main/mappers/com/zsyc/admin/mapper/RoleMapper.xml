@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.admin.mapper.RoleMapper" >
+    <resultMap id="BaseResultMap" type="com.zsyc.admin.entity.Role">
+        <result column="id" property="id" jdbcType="INTEGER" />
+    </resultMap>
+
+    <select id="getRoleList" resultType="com.zsyc.admin.entity.Role">
+        select sr.* from sys_role sr
+        <if test="loginUserId != null">
+            where EXISTS (select 1 from sys_user_role sur where sur.role_id = sr.id and sur.user_id = #{loginUserId})
+        </if>
+    </select>
+
+    <select id="getLoginRoles" resultType="com.zsyc.admin.entity.Role">
+        select sr.* from sys_role sr where EXISTS (select 1 from sys_user_role sur where sur.role_id = sr.id and sur.user_id = #{loginUserId})
+
+    </select>
+</mapper>

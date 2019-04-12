@@ -1,0 +1,45 @@
+html,
+body,
+#app {
+  height: 100%;
+  width: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  min-width: 1024px;
+}
+
+i.iconfont {
+  margin-right: 10px;
+}
+
+.el-submenu__title,
+.el-menu-item {
+  font-size: 13px;
+}
+
+/* 覆盖默认卡片视图的阴影效果 */
+.el-card {
+  margin-top: 15px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 覆盖表格的默认样式 */
+.el-table {
+  margin-top: 15px;
+  font-size: 12px;
+}
+
+/* 覆盖分页的样式 */
+.el-pagination {
+  margin-top: 15px;
+}
+
+.el-step__title {
+  font-size: 12px !important;
+}
+
+.ql-editor {
+  min-height: 400px;
+}

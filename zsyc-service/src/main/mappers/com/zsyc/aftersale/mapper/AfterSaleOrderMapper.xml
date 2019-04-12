@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.aftersale.mapper.AfterSaleOrderMapper" >
+    <!--部分缺货接口-->
+    <update id="warehouseOrderPARTIAL">
+    update warehouse_order_goods set status="PARTIAL" where id={warehousePackOrderId}
+
+</update>
+
+    <!--查找待处理售后的子订单id-->
+    <select id="selectAfterSaleOrderSubId" resultType="com.zsyc.aftersale.entity.AfterSaleOrder">
+    select order_sub_id from after_sale_order where status="FOLLOWUP";
+</select>
+
+
+    <!--根据子订单id查找数据-->
+    <select id="selectAfterSaleOrderAll" resultType="com.zsyc.order.entity.OrderSubInfo">
+        select * from order_sub_info where id=#{subId}
+    </select>
+
+    <!--客服根据子订单id更改状态-->
+    <update id="afterUpdateOrderSubStauts">
+    update order_sub_info set order_status="DONE" where id=#{subId}
+
+
+
+</update>
+
+    <select id="selectAfterSaleOrderGoods" resultType="com.zsyc.aftersale.entity.AfterSaleOrderGoods">
+        select * from after_sale_order_goods where id=#{afterSaleOrderGoodsId}
+    </select>
+
+
+
+
+
+
+</mapper>

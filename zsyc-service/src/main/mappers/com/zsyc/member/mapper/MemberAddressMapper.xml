@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.member.mapper.MemberAddressMapper" >
+    <resultMap id="BaseResultMap" type="com.zsyc.member.entity.MemberAddress" >
+        <result column="id" property="id" jdbcType="INTEGER" />
+    </resultMap>
+
+    <select id="getMemberAddressNoStore"  resultMap="BaseResultMap">
+        select ma.id, ma.lng, ma.lat from member_address ma where NOT EXISTS(
+            SELECT 1 from member_address_store mas LEFT join store_info si on mas.store_id = si.id where
+          mas.address_id = ma.id and si.store_type_id = #{storeTypeId})
+    </select>
+
+    <select id="getMemberAddressList"  resultMap="BaseResultMap">
+        select * from member_address where member_id = #{memberId} and is_del = 0
+    </select>
+
+    <update id="updateNotDeafult" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update member_address
+            <set>
+                is_default = 2
+            </set>
+            where id = #{item.id}
+        </foreach>
+    </update>
+
+    <select id="getAddressByStoreId"  resultType="com.zsyc.member.vo.MemberAddressVo">
+        select ma.* , mas.address_type as addressType, mas.is_custom as isCustom, ma.storey as isElevator from member_address ma
+            join member_address_store mas on mas.address_id = ma.id and mas.store_id = #{storeId}
+        <if test="consignee != null">
+            and ma.consignee like  CONCAT( #{consignee}, '%')
+        </if>
+        <if test="telephone != null">
+            and ma.telephone like  CONCAT( #{telephone}, '%')
+        </if>
+        <if test="locationAddress != null">
+            and ma.location_address like concat(concat('%',#{locationAddress}),'%')
+        </if>
+        <if test="adcode != null">
+            and ma.adcode like  CONCAT( #{adcode}, '%')
+        </if>
+            and ma.is_del = 0
+    </select>
+
+
+</mapper>

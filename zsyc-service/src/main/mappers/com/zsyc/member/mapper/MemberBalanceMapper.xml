@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.member.mapper.MemberBalanceMapper" >
+    <resultMap id="BaseResultMap" type="com.zsyc.member.entity.MemberBalance" >
+        <result column="id" property="id" jdbcType="INTEGER" />
+    </resultMap>
+
+    <update id="recharge">
+        update member_balance
+          set balance = balance + #{momey} ,
+              update_time = #{updateTime},
+              update_user_id = #{updateUser}
+        where id = #{balanceId}
+    </update>
+
+    <select id="getBalanceList" resultMap="BaseResultMap">
+        select mb.* from member_balance mb, member_info mi where mb.member_id = mi.id
+        <if test="name != null">
+            and mi.nick_name like  CONCAT( #{name}, '%')
+        </if>
+        <if test="telephone != null">
+            and mi.telephone like  CONCAT( #{telephone}, '%')
+        </if>
+    </select>
+
+</mapper>

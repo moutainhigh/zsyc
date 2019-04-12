@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.goods.mapper.GoodsStorePriceMapper">
+
+    <select id="selectGoodsPriceAndName" resultType="com.zsyc.goods.bo.GoodsStorePriceListBO">
+        select p.id,p.price,p.vip_price as vipPrice,p.cost_price as costPrice,p.is_bargain_price as isBargainPrice,p.status,g.picture,p.is_recommend as isRecommend,
+               g.goods_type as goodsType,g.goods_style as goodsStyle,g.goods_name as goodsName,g.sku,b.brand_name as brandName,g.status from goods_store_price p inner join goods_info g on p.sku=g.sku inner join goods_brand_relation r on g.sku=r.sku
+          left join goods_brand b on r.brand_code = b.brand_code where p.is_del=#{is_del} and p.status=#{status} and p.store_id=#{store_id} and g.is_del=#{is_del}
+          order by p.create_time desc
+    </select>
+
+    <select id="selectGoodsChildPriceAndName" resultType="com.zsyc.goods.bo.GoodsStorePriceListBO">
+        select p.id,p.price,p.vip_price as vipPrice,p.cost_price as costPrice,p.is_bargain_price as isBargainPrice,p.status,g.picture,p.is_recommend as isRecommend,
+        g.goods_type as goodsType,g.goods_style as goodsStyle,g.goods_name as goodsName,g.sku,b.brand_name as brandName,g.status from goods_store_price p inner join goods_info g on p.sku=g.sku inner join goods_brand_relation r on g.sku=r.sku
+        left join goods_brand b on r.brand_code = b.brand_code where p.is_del=#{is_del} and p.status=#{status} and p.store_id=#{store_id} and g.is_del=#{is_del} and g.goods_type=#{goods_type} <![CDATA[and g.goods_style<>#{goods_style} ]]>
+    </select>
+
+    <select id="selectGoodsIngredientPriceAndName" resultType="com.zsyc.goods.bo.GoodsStorePriceListBO">
+        select p.id,p.price,p.vip_price as vipPrice,p.cost_price as costPrice,p.is_bargain_price as isBargainPrice,p.status,g.picture,p.is_recommend as isRecommend,
+               g.goods_type as goodsType,g.goods_style as goodsStyle,g.goods_name as goodsName,g.sku,b.brand_name as brandName,g.status from goods_store_price p inner join goods_info g on p.sku=g.sku inner join goods_brand_relation r on g.sku=r.sku
+        left join goods_brand b on r.brand_code = b.brand_code where p.is_del=#{is_del} and p.status=#{status} and p.store_id=#{store_id} and g.is_del=#{is_del} and g.goods_type=#{goods_type} and g.goods_style=#{goods_style}
+    </select>
+
+    <select id="getGoodsVipPriceList" resultType="com.zsyc.goods.bo.GoodsStorePriceListBO">
+        select p.id,p.price,p.vip_price as vipPrice,p.cost_price as costPrice,p.is_bargain_price as isBargainPrice,p.status,g.picture,p.is_recommend as isRecommend,
+        g.goods_type as goodsType,g.goods_style as goodsStyle,g.goods_name as goodsName,g.sku,b.brand_name as brandName,g.status from goods_store_price p inner join goods_info g on p.sku=g.sku inner join goods_brand_relation r on g.sku=r.sku
+        left join goods_brand b on r.brand_code = b.brand_code where p.is_del=#{is_del} and g.is_del=#{is_del} and g.goods_type=#{goods_type}
+        and p.store_id=#{store_price_search.storeId}
+        <if test="store_price_search.sku != null">
+            and p.sku=#{store_price_search.sku}
+        </if>
+        <if test="store_price_search.status != null">
+            and p.status=#{store_price_search.status}
+        </if>
+        <if test="store_price_search.isBargainPrice != null">
+            and p.is_bargain_price=#{store_price_search.isBargainPrice}
+        </if>
+        <if test="store_price_search.isRecommend != null">
+            and p.is_recommend=#{store_price_search.isRecommend}
+        </if>
+        <if test="store_price_search.beforeTime != null and store_price_search.afterTime==null">
+            <![CDATA[ and p.create_time >= #{store_price_search.beforeTime}]]>
+        </if>
+        <if test="store_price_search.afterTime != null and store_price_search.beforeTime==null">
+            <![CDATA[ and p.create_time <= #{store_price_search.afterTime}]]>
+        </if>
+        <if test="store_price_search.beforeTime != null and store_price_search.afterTime!=null">
+            and p.create_time between #{store_price_search.beforeTime} and #{store_price_search.afterTime}
+        </if>
+        <if test="store_price_search.changeBeforePrice != null and store_price_search.changeAfterPrice==null">
+            <![CDATA[ and p.vip_price >= #{store_price_search.changeBeforePrice}]]>
+        </if>
+        <if test="store_price_search.changeAfterPrice != null and store_price_search.changeBeforePrice==null">
+            <![CDATA[ and p.vip_price <= #{store_price_search.changeAfterPrice}]]>
+        </if>
+        <if test="store_price_search.changeBeforePrice != null and store_price_search.changeAfterPrice!=null">
+            and p.vip_price between #{store_price_search.changeBeforePrice} and #{store_price_search.changeAfterPrice}
+        </if>
+        order by p.create_time desc
+    </select>
+
+    <select id="selectGoodsPriceVO" resultType="com.zsyc.goods.bo.GoodsStorePriceBO">
+        select p.id,p.price,p.vip_price as vipPrice,p.cost_price as costPrice,p.is_bargain_price as isBargainPrice,p.status,
+               g.goods_type as goodsType,g.goods_name as goodsName,g.sku,b.brand_name as brandName,g.status from goods_store_price p inner join goods_info g on p.sku=g.sku inner join goods_brand_relation r on g.sku=r.sku
+        left join goods_brand b on r.brand_code = b.brand_code where p.is_del=#{is_del} and p.status=#{status} and p.store_id=#{store_id} and g.is_del=#{is_del} and p.sku=#{sku}
+    </select>
+
+    <select id="selectGoodsPriceAndNameByCategory" resultType="com.zsyc.goods.bo.GoodsAndPriceBO">
+        select s.id,g.goods_name as goodsName,g.picture,g.spu,g.goods_style as goodsStyle,g.sku,s.price,s.vip_price as vipPrice,s.cost_price as costPrice from goods_store_price s inner join goods_info g on s.sku=g.sku
+        inner join goods_category_relation r on s.sku=r.sku where
+        g.is_del=#{is_del} and g.status=#{status} and s.is_del=#{is_del} and s.status=#{status} and s.store_id=#{store_id} and r.category_id=#{category_id}
+        <if test="category_type != null">
+            and g.goods_style=0
+        </if>
+        group by g.spu order by s.create_time desc
+    </select>
+
+    <select id="selectWaterOrGasPriceList" resultType="com.zsyc.goods.bo.GoodsAndPriceBO">
+        select s.id,g.goods_name as goodsName,g.picture,g.spu,g.goods_style as goodsStyle,g.sku,s.price,s.vip_price as vipPrice,s.cost_price as costPrice from goods_store_price s inner join goods_info g on s.sku=g.sku
+        inner join goods_category_relation r on s.sku=r.sku where
+        g.is_del=#{is_del} and g.status=#{status} and s.is_del=#{is_del} and s.status=#{status} and s.store_id=#{store_id} and r.category_id=#{category_id} order by s.create_time desc
+    </select>
+
+    <select id="selectStoreSkuList" resultType="com.zsyc.goods.entity.GoodsInfo">
+        select g.sku from goods_info g right join goods_store_price s on g.sku=s.sku where g.spu=#{spu} and s.store_id=#{store_id}
+        and g.is_del=#{is_del} and s.is_del=#{is_del} and g.status=#{status} and s.status=#{status}
+    </select>
+
+    <select id="selectStoreGoodsPriceList" resultType="com.zsyc.goods.bo.GoodsBarginRecommendPriceBO">
+        select price,vipPrice,costPrice,goodsType,goodsName,sku,spu,picture,goodsStyle,update_time,create_time from (select p.price,p.vip_price as vipPrice,p.cost_price as costPrice,
+               g.goods_type as goodsType,g.goods_name as goodsName,g.sku,g.spu,g.picture,g.goods_style as goodsStyle,p.update_time,p.create_time from goods_store_price p inner join goods_info g on p.sku=g.sku
+                       where p.is_del=#{is_del} and p.status=#{status} and p.store_id=#{store_id} and g.is_del=#{is_del} and g.goods_style=#{goods_style} and g.goods_type=#{goods_type}
+                        <if test="is_bargain_price != null">
+                            and p.is_bargain_price=#{is_bargain_price}
+                        </if>
+                        <if test="is_recommend != null">
+                            and p.is_recommend=#{is_recommend}
+                        </if>
+                       ORDER BY p.price asc limit 100000) a group by spu limit #{page_num},#{page_size}
+    </select>
+
+    <select id="goodsBarginPriceCount" resultType="java.lang.Integer">
+        select COUNT(1) from (select g.spu from goods_store_price p inner join goods_info g on p.sku=g.sku
+                              where p.is_del=#{is_del} and p.status=#{status} and p.store_id=#{store_id} and g.is_del=#{is_del} and g.goods_style=#{goods_style} and g.goods_type=#{goods_type}
+                                <if test="is_bargain_price != null">
+                                    and p.is_bargain_price=#{is_bargain_price}
+                                </if>
+                                <if test="is_recommend != null">
+                                    and p.is_recommend=#{is_recommend}
+                                </if>
+                              group by g.spu) a
+    </select>
+
+    <select id="selectGoodsCookBookList" resultType="com.zsyc.goods.bo.GoodsBarginRecommendPriceBO">
+        select price,vipPrice,costPrice,goodsType,goodsName,sku,spu,picture,goodsStyle from(
+       select p.price,p.vip_price as vipPrice,p.cost_price as costPrice,
+              g.goods_type as goodsType,g.goods_name as goodsName,g.sku,g.spu,g.picture,g.goods_style as goodsStyle
+       from goods_store_price p inner join goods_info g on p.sku=g.sku inner join goods_category_relation r on r.sku=p.sku left join goods_category c on c.id=r.category_id
+          where c.category_type=#{category_type} and p.is_del=#{is_del} and p.status=#{status} and p.store_id=#{store_id} and g.is_del=#{is_del} and g.goods_style=#{goods_style} and p.is_recommend=#{is_recommend}
+        ORDER BY p.price asc limit 0,100000) a group by spu limit #{page_num},#{page_size}
+    </select>
+
+    <select id="selectGoodsCookBookCount" resultType="java.lang.Integer">
+        select COUNT(1) from (
+          select g.spu from goods_store_price p inner join goods_info g on p.sku=g.sku
+         inner join goods_category_relation r on r.sku=p.sku
+         left join goods_category c on c.id=r.category_id
+           where c.category_type=#{category_type} and p.is_del=#{is_del} and p.status=#{status} and p.store_id=#{store_id} and g.is_del=#{is_del} and g.goods_style=#{goods_style} and p.is_recommend=#{is_recommend}
+           group by g.spu) a
+    </select>
+
+    <select id="selectGoodsListByName" resultType="com.zsyc.goods.bo.GoodsAndPriceBO">
+        select s.id,g.goods_name as goodsName,g.picture,g.spu,g.goods_style as goodsStyle,g.sku,s.price,s.vip_price as vipPrice,s.cost_price as costPrice
+        from goods_store_price s inner join goods_info g on s.sku=g.sku
+        where g.is_del=#{is_del} and g.status=#{status} and s.is_del=#{is_del} and s.status=#{status} and s.store_id=#{store_id} and g.goods_style=#{goods_style} and g.goods_type=#{goods_type}
+        and goods_name like concat(concat('%',#{goods_name}),'%') group by g.spu order by s.create_time desc
+    </select>
+</mapper>

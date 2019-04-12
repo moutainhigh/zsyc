@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.goods.mapper.GoodsGroupMapper" >
+
+    <insert id="insertGoodsGroupList" parameterType="java.util.List">
+        insert into goods_group (sku,sub_sku,create_user_id,create_time,sort) values
+        <foreach collection="list" item="item" index="index" separator=",">
+        (#{item.sku},#{item.subSku},#{item.createUserId},#{item.createTime},#{item.sort})
+        </foreach>
+    </insert>
+
+    <select id="selectGoodsSkuNameInfo" resultType="com.zsyc.goods.vo.GoodsGroupSkuNameVO" parameterType="java.lang.String">
+        select i.sku,i.goods_name,i.goods_style as goodsStyle,g.sort from goods_info i right join goods_group g on i.sku=g.sub_sku where g.sku=#{sku}
+    </select>
+
+    <select id="selectGoodsPrice" resultType="com.zsyc.goods.bo.GoodsGroupBO">
+        select g.id,g.sku,g.sub_sku,p.price,p.vip_price,p.cost_price,i.goods_style as goodsStyle from goods_group g left join goods_store_price p on g.sub_sku=p.sku left join
+        goods_info i on i.sku=g.sub_sku
+        where p.store_id=#{store_id} and g.sku in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            (#{item})
+        </foreach>
+    </select>
+
+    <select id="selectGoodsNameGroupList" resultType="com.zsyc.goods.bo.GoodsNameGroupBO" parameterType="java.lang.String">
+        select i.goods_name as goodsName,g.sku,g.sub_sku as subSku,i.goods_style as goodsStyle,i.picture from goods_group g left join goods_info i on g.sub_sku=i.sku where g.sku=#{sku}
+    </select>
+
+</mapper>

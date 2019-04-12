@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.order.mapper.OrderSubSettlementReportMapper" >
+
+    <insert id="createOrderSubSettlementReport" parameterType="list">
+        insert into order_sub_settlement_report(settlement_no,sku,num) values
+        <foreach collection="list" item="report" separator="," index="index">
+            (
+            #{report.settlementNo},#{report.sku},#{report.num}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

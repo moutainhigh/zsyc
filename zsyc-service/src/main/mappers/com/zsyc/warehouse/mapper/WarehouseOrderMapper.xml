@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.warehouse.mapper.WarehouseOrderMapper">
+    <!--按照sku查找是否组合商品-->
+    <select id="selectSKuZu" resultType="com.zsyc.goods.entity.GoodsInfo">
+    SELECT goods_type FROM goods_info WHERE sku=#{sku}
+    </select>
+
+    <select id="selectStaffName" resultType="com.zsyc.warehouse.entity.WarehouseStaff">
+        select * from warehouse_staff where id =#{staffId}
+    </select>
+    <!--查找总体的店铺ID-->
+    <select id="selectOrdersubinfo" resultType="com.zsyc.order.entity.OrderSubInfo">
+    SELECT * FROM  order_sub_info  WHERE store_id=#{storeId} ;
+    </select>
+    <!--查找准备状态的备货单-->
+    <select id="selectWareHouseOrderGoods" resultType="com.zsyc.warehouse.entity.WarehouseOrderGoods">
+        select id from warehouse_order where status="READY" and store_id=#{storeId};
+    </select>
+
+    <!--按照备货单查找具体数据-->
+    <select id="miniWareHouse" resultType="com.zsyc.warehouse.po.SortingOrderPo">
+SELECT warehouse_order_goods.`create_time`,warehouse_order_id AS warehouseOrderId,goods_info.`sku`,message,goods_info.`goods_name`,warehouse_order.`warehouse_order_no` FROM
+warehouse_order_goods JOIN goods_info ON warehouse_order_goods.`sku`=goods_info.`sku`JOIN  warehouse_order ON warehouse_order.`id`=warehouse_order_goods.`warehouse_order_id` WHERE
+warehouse_order_goods.`warehouse_order_id`=#{checkId}
+    </select>
+
+
+    <!--根据子订单id获得所有订单快照表的数据(sku)-->
+    <select id="selectOrderGoods" resultType="com.zsyc.warehouse.po.WarehousePo">
+ SELECT * FROM  order_sub_info, order_goods WHERE order_sub_info.store_id=#{storeId}
+ AND order_sub_info.id=order_goods.order_sub_id
+
+
+    </select>
+
+
+    <select id="selectWarehouse" resultType="com.zsyc.warehouse.po.WarehousePo">
+     SELECT order_goods.`sku`,warehouse_order.`id` AS warehouseOrderId ,order_goods.`num`,order_goods.`unit` FROM  warehouse_order JOIN order_sub_info ON warehouse_order.`store_id`=order_sub_info.`store_id`
+JOIN order_goods ON order_sub_info.`id`=order_goods.`order_sub_id`
+    </select>
+
+
+    <!--接单后根据备货id更改主备货单（备货员id）(备货状态)-->
+    <update id="updateWareHouseStatus">
+       update warehouse_order set warehouse_staff_id=#{wareHouseId},status="STOCKING",receive_time=#{receiveTime} where id=#{warehouseOrderId};
+    </update>
+
+
+    <!--检验此备货单状态是否已经备货S状态-->
+    <select id="wareHouseOrderStatus" resultType="com.zsyc.warehouse.entity.WarehouseOrder">
+    select status from warehouse_order where id=#{warehouseOrderId};
+
+
+    </select>
+    <!--更新子备货单status状态（0是缺货1是完成）-->
+    <update id="updateOrderSubStauts">
+    update warehouse_order_goods set status=#{stauts} where id=#{id}
+    </update>
+    <!--获得备货单列表-->
+    <!--<select id="selectWarhousestatusOrder">-->
+    <!--select warehouse_order.id,warehouse_order_goods.sku from warehouse_order join warehouse_order_goods on-->
+    <!--warehouse_order.id=warehouse_order_goods.warehouse_order_id-->
+    <!--</select>-->
+    <select id="ordersubID" resultType="com.zsyc.order.entity.OrderSubInfo">
+    select  id from order_sub_info;
+</select>
+
+
+    <!--后台获取还没有备货的订单信息-->
+    <select id="selectReadyWareHouse" resultType="com.zsyc.warehouse.po.BackendWarehouseOrder">
+SELECT * FROM warehouse_order,warehouse_order_goods,
+goods_info
+WHERE warehouse_order_goods.`warehouse_order_id`=warehouse_order.`id`
+
+AND goods_info.sku=warehouse_order_goods.sku
+AND warehouse_order.`status`="READY"
+
+  </select>
+
+    <!--后台获取已备货订单信息-->
+    <select id="selectReadyWareHouseDone" resultType="com.zsyc.warehouse.po.BackendWarehouseOrder">
+SELECT * FROM warehouse_order,warehouse_order_goods,
+goods_info
+WHERE warehouse_order_goods.`warehouse_order_id`=warehouse_order.`id`
+
+AND goods_info.sku=warehouse_order_goods.sku
+AND warehouse_order.`status`="DONE"
+
+  </select>
+
+
+    <!--后台获取商品名称规格-->
+    <select id="selectAttrKey" resultType="com.zsyc.warehouse.po.BackendWarehouseOrder">
+SELECT goods_attribute.`attr_key_name` as attrKeyName,
+goods_attribute_value.attr_value_name as attrValueName  FROM goods_info,goods_attribute_relation,goods_attribute,goods_attribute_value
+ WHERE goods_info.`sku`=#{sku}
+AND goods_info.`sku`=goods_attribute_relation.`sku`
+AND goods_attribute_relation.`attr_key`=goods_attribute.`attr_key`
+AND goods_attribute_relation.`attr_value_key`=goods_attribute_value.`attr_value_key`
+
+    </select>
+
+
+
+    <!--后台获取已备货信息-->
+    <select id="selectReadyWareHouseTrue" resultType="com.zsyc.warehouse.po.BackendWarehouseOrder">
+    SELECT warehouse_order.`warehouse_order_no` as warehouseOrderNo,
+    goods_info.`goods_name` as goodsName,
+    goods_attribute.`attr_key_name` as attrKeyName,
+    warehouse_order_goods.`message` as message,
+    goods_attribute_value.attr_value_name as attrValueName,
+    warehouse_order.status as status
+ FROM warehouse_order,warehouse_order_goods,goods_info,goods_attribute_relation,goods_attribute,goods_attribute_value
+ WHERE warehouse_order.`status`="DONE"
+ AND warehouse_order.`id`=warehouse_order_goods.`warehouse_order_id`
+ AND warehouse_order_goods.`sku`=goods_info.`sku`
+ AND goods_info.`sku` =goods_attribute_relation.`sku`
+ AND goods_attribute_relation.`attr_key`=goods_attribute.`attr_key`
+ AND goods_attribute.`attr_key`=goods_attribute_value.`attr_key`
+  </select>
+    <!--后台查找完成备货正在等待分拣订单-->
+    <select id="selectStockWareHouse" resultType="com.zsyc.warehouse.po.BackendStockWarehouse">
+ SELECT order_sub_info.`id`,order_sub_info.`consignee_phone` AS Phone,
+        order_sub_info.`consignee` AS consignee,
+        order_sub_info.`create_time` AS createTime,
+        goods_info.`picture` AS picture,
+        goods_info.`goods_name` AS goodsName,
+        order_sub_info.order_no AS orderNo,
+        warehouse_pack_order_goods.`num` AS num,
+        goods_attribute.`attr_key_name` AS attrKeyName,
+        goods_attribute_value.attr_value_name AS attrValueName
+FROM
+        warehouse_pack_order_goods,order_goods,goods_info,order_sub_info,goods_attribute_relation,goods_attribute,goods_attribute_value
+WHERE
+        warehouse_pack_order_goods.status="DONE"
+    AND order_goods.`order_sub_id` =warehouse_pack_order_goods.`order_goods_id`
+    AND order_goods.`sku` =goods_info.`sku`
+    AND warehouse_pack_order_goods.`order_goods_id`=order_sub_info.`id`
+    AND goods_info.`sku` =goods_attribute_relation.`sku`
+    AND goods_attribute_relation.`attr_key`=goods_attribute.`attr_key`
+    AND goods_attribute.`attr_key`=goods_attribute_value.`attr_key`
+    AND goods_attribute_relation.`attr_value_key`=goods_attribute_value.`attr_value_key`
+    AND order_sub_info.`id`=#{subId}
+    </select>
+
+
+    <!--</select>-->
+
+    <!--根据店铺ID和预约提前时间获取订单字表  -->
+    <select id="selectOrderGoodsPresetTime" resultType="com.zsyc.order.entity.OrderSubInfo">
+  	select * from order_sub_info where type = 'ORDINARY' and store_id=#{storeId,jdbcType=BIGINT} and now()>=SUBDATE(book_start_time,interval #{minute,jdbcType=INTEGER} minute) and order_status='PAID';
+  </select>
+
+    <!-- 根据订单字表ID查询对应的商品快照信息 -->
+    <select id="selectOrderGoodsByOrderId" resultType="com.zsyc.order.entity.OrderGoods">
+  	 select * from order_goods where order_sub_id = #{orderSubId};
+  </select>
+
+    <!--已完成备货单接口-->
+    <select id="selectWareHouseAll" resultType="com.zsyc.warehouse.entity.WarehouseOrder">
+        select * from warehouse_order where store_id=#{storeId} and status="DONE" and warehouse_staff_id=#{wareHouseId}
+        ORDER BY id DESC
+
+    </select>
+
+    <update id="updateBeenStock">
+      update  order_sub_info set order_status="BEENSTOCK" where id=#{subId}
+    </update>
+
+
+
+    <!--后台根据备货单号查询备货列表-->
+    <select id="warehouseOrderGoodsOrderNo" resultType="com.zsyc.warehouse.BackEndVo.WareHouseOrderVo">
+SELECT warehouse_order.warehouse_order_no as warehouseOrderNo,
+warehouse_order.id as wareHouseOrderid,
+warehouse_order.create_time as wareHouseCreateTime,
+warehouse_order.store_id as storeId,
+warehouse_order.status as wareHouseOrderStatus,
+warehouse_order.warehouse_staff_id as warehouseStaffId,
+warehouse_order.receive_time as receiveTime,
+goods_info.goods_name as goodsName,
+warehouse_order_goods.id as warehouseOrderGoodsId,
+warehouse_order_goods.sku as sku,
+warehouse_order_goods.message as message,
+warehouse_order_goods.status as status,
+warehouse_order_goods.create_time as createTime,
+warehouse_order_goods.is_del as isDel
+ FROM warehouse_order,warehouse_order_goods,goods_info WHERE warehouse_order_goods.`warehouse_order_id`=warehouse_order.`id`
+AND warehouse_order.`warehouse_order_no`=#{warehouseOrderNo} AND warehouse_order_goods.`sku`=goods_info.`sku`
+</select>
+
+
+    <!--根据时间范围查询列表-->
+    <select id="warehouseOrderGoodsCreateTime" resultType="com.zsyc.warehouse.entity.WarehouseOrder">
+SELECT id FROM warehouse_order WHERE
+selectStoreInfo
+  create_time &gt;=#{startTime} and create_time &lt;= #{endTime}
+
+</select>
+
+    <select id="warehouseOrderGoodsCreateTimeAll" resultType="com.zsyc.warehouse.BackEndVo.WareHouseOrderVo">
+SELECT warehouse_order.warehouse_order_no as warehouseOrderNo,
+warehouse_order.id as wareHouseOrderid,
+warehouse_order.remark as remark,
+warehouse_order.create_time as wareHouseCreateTime,
+warehouse_order.store_id as storeId,
+warehouse_order_goods.status as wareHouseOrderStatus,
+warehouse_order.warehouse_staff_id as warehouseStaffId,
+warehouse_order.receive_time as receiveTime,
+warehouse_order.status as wareHouseStatus,
+goods_info.goods_name as goodsName,
+goods_info.picture as img,
+warehouse_order_goods.id as warehouseOrderGoodsId,
+
+warehouse_order_goods.sku as sku,
+warehouse_order_goods.message as message,
+warehouse_order_goods.status as status,
+warehouse_order_goods.create_time as createTime,
+warehouse_order_goods.is_del as isDel
+ FROM warehouse_order,warehouse_order_goods,goods_info WHERE warehouse_order_goods.`warehouse_order_id`=warehouse_order.`id`
+AND warehouse_order.id=#{id} AND warehouse_order_goods.`sku`=goods_info.`sku`
+</select>
+
+
+<!--后台显示门店id和名称-->
+    <select id="selectStoreInfo" resultType="com.zsyc.store.entity.StoreInfo">
+    SELECT id,store_name FROM store_info WHERE id IN(146,155)
+    </select>
+    <!--查找该门店id的主备货id-->
+    <!--后台根据门店id查找该门店所有备货列表-->
+    <select id="selectStoreId" resultType="com.zsyc.warehouse.entity.WarehouseOrder">
+        SELECT id FROM warehouse_order WHERE store_id=#{storeId}
+    </select>
+
+    <!--查找状态备货单列表-->
+    <select id="warehouseOrderGoodsStatus" resultType="com.zsyc.warehouse.entity.WarehouseOrder">
+        select id from warehouse_order where status=#{status}
+    </select>
+    <!--后台根据备货员id查找备货列表-->
+    <select id="selectWareHouseOrderStaffId" resultType="com.zsyc.warehouse.entity.WarehouseOrder">
+         select id from warehouse_order where warehouse_staff_id=#{staffId}
+    </select>
+<select id="selectOrdergoods" resultType="com.zsyc.order.entity.OrderGoods">
+    select * from order_goods where order_sub_id=#{subId}
+</select>
+
+
+<select id="selectStock" resultType="com.zsyc.warehouse.entity.WarehouseOrder">
+    select  warehouse_order.id from
+    warehouse_order,warehouse_order_goods
+    where 1=1
+
+    <if test="storeId!=null">
+        and warehouse_order.store_id=#{storeId}
+    </if>
+
+    <if test="warehouseOrderNo!=null">
+     and warehouse_order.warehouse_order_no=#{warehouseOrderNo}
+    </if>
+
+    <if test="startTime!=null">
+      and warehouse_order.create_time &gt;=#{startTime}
+    </if>
+    <if test="endTime!=null">
+        and warehouse_order.create_time &lt;= #{endTime}
+    </if>
+
+    <if test="status!=null">
+    and warehouse_order.status=#{status}
+    </if>
+    <if test="staffId!=null">
+        and warehouse_order.warehouse_staff_id=#{staffId}
+    </if>
+
+    group by warehouse_order.id
+
+</select>
+
+<update id="updateWareHouseOrderStatusAll">
+    update  warehouse_order set status=#{status},update_user_id=#{userId},update_time=now() where id =#{wareHouseOrderid}
+</update>
+<!--按照门店和sku查价格-->
+<select id="selectPriceSku" resultType="com.zsyc.goods.entity.GoodsStorePrice">
+    select * from goods_store_price where store_id=#{storeId} and sku=#{sku}
+</select>
+
+
+
+
+</mapper>

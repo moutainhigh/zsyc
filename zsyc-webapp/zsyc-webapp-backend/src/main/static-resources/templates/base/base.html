@@ -1,0 +1,21 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head th:fragment="baseHead(title)">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+
+    <script src="/js/3rd/vue/vue.min.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+    <title th:replace="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+
+<div th:fragment="footer">
+    <footer th:fragment="copyright">
+        <!--<span th:text="${#dates.format(new java.util.Date().getTime(), 'yyyy')}"></span>-->
+    </footer>
+</div>
+</html>

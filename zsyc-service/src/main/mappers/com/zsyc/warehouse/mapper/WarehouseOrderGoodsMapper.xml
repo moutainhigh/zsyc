@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.warehouse.mapper.WarehouseOrderGoodsMapper">
+<update id="wareHouseDone">
+    update warehouse_order set status="DONE" where id=#{id};
+</update>
+    <update id="updateWareHousePackOrder">
+    update warehouse_pack_order set status="PENDDING" where warehouse_order_id=#{id};
+</update>
+
+    <update id="updateWarehouseOrderGoods">
+        update warehouse_order_goods set status=#{status},update_user_id=#{userId},update_time=now() where id=#{warehouseOrderGoodsId}
+    </update>
+
+    <select id="selectWareHouseOrderGoods" resultType="com.zsyc.warehouse.entity.WarehouseOrderGoods">
+        select  * from warehouse_order_goods where warehouse_order_id=#{wareOrderId}
+    </select>
+
+    <update id="updateWarehouseOrderRemark">
+        update warehouse_order set remark=#{remark} where id=#{id}
+    </update>
+
+
+
+</mapper>

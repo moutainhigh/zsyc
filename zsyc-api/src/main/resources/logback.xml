@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="300 seconds" debug="false">
+    <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径-->
+
+    <property name="LOG_HOME" value="/tmp/logs" />
+    <property name="APP_NAME" value="zsyc-api" />
+    <!--
+	<property name="LOG_HOME" value="/tmp/logs" />
+    -->
+    <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+    <!--参考ch.qos.logback.classic.PatternLayout -->
+    <!--  property name="LOG_FORMAT" value="%d{MM-dd HH:mm:ss.SSS} [%thread] %-5level %class.%method\\(%F:%L\\) - %msg%n" / -->
+    <!--<property name="LOG_FORMAT" value="%d{yyyy-MM-dd HH:mm:ss.SSS}|%-5level [%thread] %class.%method\\(%F:%L\\) - %msg%n" />-->
+
+    <property name="LOG_FORMAT" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p - [%-18t] %-40.40logger{39} : %m%n" />
+
+    <!-- 控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder charset="UTF-8" >
+            <pattern>${LOG_FORMAT}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 按照每天生成日志文件 -->
+    <appender name="DAILY" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder charset="UTF-8">
+            <pattern>${LOG_FORMAT}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/${APP_NAME}_%d{yyyyMMdd}_CORE.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+
+    <appender name="DAILY_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder charset="UTF-8">
+            <pattern>${LOG_FORMAT}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/${APP_NAME}_%d{yyyyMMdd}_ERROR.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!--<logger name="io.netty" level="DEBUG" />-->
+
+    <!-- 日志输出级别 -->
+    <!-- OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL. -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="DAILY" />
+        <appender-ref ref="DAILY_ERROR" />
+    </root>
+
+</configuration>

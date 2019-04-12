@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.goods.mapper.GoodsStoreStockMapper" >
+
+    <select id="selectGoodsStoreStockList" resultType="com.zsyc.goods.vo.GoodsStoreStockListVO">
+        select g.goods_name as goodsName,g.goods_type as goodsType,b.brand_name as brandName,s.total,s.sku,s.store_id,s.id,g.picture,g.goods_style as goodsStyle from goods_info g inner join goods_store_stock s on g.sku=s.sku
+          inner join goods_brand_relation r on g.sku=r.sku left join goods_brand b on r.brand_code = b.brand_code
+        where g.is_del=#{is_del} and s.store_id=#{store_id}
+    </select>
+
+    <select id="selectGoodsStoreStock" resultType="com.zsyc.goods.vo.GoodsStoreStockVO">
+        select g.goods_name as goodsName,g.goods_type as goodsType,b.brand_name as brandName,s.total,s.sku,s.store_id,s.id from goods_info g inner join goods_store_stock s on g.sku=s.sku
+        inner join goods_brand_relation r on g.sku=r.sku left join goods_brand b on r.brand_code = b.brand_code
+        where g.is_del=#{is_del} and s.store_id=#{store_id} and s.sku=#{sku}
+    </select>
+
+</mapper>

@@ -1,0 +1,19 @@
+<input type="file" name="file" multiple="multiple" />
+<br>
+<img />
+<img />
+<img />
+<script src="assets/js/file.min.js" ></script>
+<script>
+	window.uploadHost = '';
+	document.querySelector('input').addEventListener('change',function(){
+		var  files = this.files;
+		fileUpload(files[0]).then(function(data){
+			console.log(1,data);
+            var code = data.bizContent.code;
+			document.querySelectorAll('img')[0].src =`${window.uploadHost}/origin/${code}`;
+			document.querySelectorAll('img')[1].src =`${window.uploadHost}/small/${code}`;
+			document.querySelectorAll('img')[2].src =`${window.uploadHost}/middle/${code}`;
+		});
+	});
+</script>

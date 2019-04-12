@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.delivery.mapper.DeliveryStaffMapper" >
+    <resultMap id="BaseResultMap" type="com.zsyc.delivery.vo.DeliveryStaffVo">
+        <result column="id" property="id" jdbcType="INTEGER" />
+    </resultMap>
+
+    <select id="deliverySalary" resultMap="BaseResultMap">
+        select ds.id as id, SUM(osi.express_amount) AS amount from delivery_staff ds
+          left JOIN order_sub_info osi on osi.postman_id = ds.id and osi.create_time &lt;= #{endTime, jdbcType = VARCHAR}
+          and osi.create_time &gt;=  #{beginTime, jdbcType = VARCHAR}
+          GROUP BY ds.id
+    </select>
+
+
+    <select id="deliveryTurnIn" parameterType="Map" resultMap="BaseResultMap">
+        select ds.id as id, SUM(osi.actual_amount) AS turnIn from delivery_staff ds
+            left JOIN order_sub_info osi on osi.postman_id = ds.id and osi.id in
+        <foreach collection="params.ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        GROUP BY ds.id
+    </select>
+
+    <select id="getDeliveryList" resultMap="BaseResultMap">
+        select * from delivery_staff d join store_delivery_relation s on d.id = s.master_id
+           and s.store_id = #{storeId, jdbcType = INTEGER}
+        <if test="masterName!=null">
+            and d.master_name like  CONCAT(#{masterName},'%')
+        </if>
+        <if test="phone!=null">
+            and d.phone like  CONCAT(#{phone},'%')
+        </if>
+        <if test="masterType!=null">
+            and d.master_type = #{masterType}
+        </if>
+            and d.is_del = 0
+    </select>
+
+    <update id="deleteDelivery" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update delivery_staff
+            <set>
+                is_del = 1
+            </set>
+            where id = #{item}
+        </foreach>
+    </update>
+
+
+
+
+
+
+
+    <select id="selectDeliVeryStaff" resultType="com.zsyc.delivery.po.DeliverStaffBillBo">
+        select *
+
+        from delivery_staff where 1=1
+    <if test="masterName!=null">
+        and master_name like  CONCAT(#{masterName},'%')
+    </if>
+    <if test="phone!=null">
+        and phone=#{phone}
+    </if>
+   <if test="masterType!=null">
+       and master_type = #{masterType}
+   </if>
+    and is_del=1
+    </select>
+
+
+    <update id="setIsDel">
+    update delivery_staff set is_del=2 where id=#{id}
+</update>
+    <update id="updateMasterName">
+    update delivery_staff set master_name=#{newMasterName} where id=#{id}
+</update>
+    <update id="updateMasterPhone">
+    update delivery_staff set phone=#{phone} where id=#{id}
+</update>
+
+    <update id="updatePapersPapers">
+    update delivery_staff set papers=#{papers} where id=#{id}
+</update>
+
+    <update id="updateIsLeader">
+            update delivery_staff set is_leader=#{isLeader} where id=#{id}
+    </update>
+
+
+
+</mapper>

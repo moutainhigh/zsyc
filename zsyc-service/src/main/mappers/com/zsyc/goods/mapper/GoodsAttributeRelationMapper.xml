@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.goods.mapper.GoodsAttributeRelationMapper" >
+
+
+    <insert id="insertGoodsAttributeRelationList" parameterType="java.util.List">
+        insert into goods_attribute_relation (sku,attr_key,attr_value_key,create_time,create_user_id) values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.sku},#{item.attrKey},#{item.attrValueKey},#{item.createTime},#{item.createUserId})
+        </foreach>
+    </insert>
+
+    <select id="selectValueNameList" parameterType="java.util.List" resultType="com.zsyc.goods.bo.GoodsAttributeValueBO">
+        select r.id,r.sku,r.attr_value_key as attrValueKey,a.attr_key as attrKey,a.attr_key_name as attrKeyName,a.is_sale as isSale,v.attr_value_name as attrValueName from
+        goods_attribute_relation r INNER JOIN goods_attribute_value v on r.attr_value_key=v.attr_value_key LEFT JOIN goods_attribute a on a.attr_key=v.attr_key where r.sku in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            (#{item})
+        </foreach>
+    </select>
+
+    <select id="selectValueNameListById" parameterType="java.lang.String" resultType="com.zsyc.goods.bo.GoodsAttributeValueBO">
+        select r.id,r.sku,r.attr_value_key as attrValueKey,a.attr_key as attrKey,a.attr_key_name as attrKeyName,a.is_sale as isSale,v.attr_value_name as attrValueName from goods_attribute_relation r
+          INNER JOIN goods_attribute_value v on r.attr_value_key=v.attr_value_key LEFT JOIN goods_attribute a on a.attr_key=v.attr_key where r.sku =#{sku}
+    </select>
+</mapper>

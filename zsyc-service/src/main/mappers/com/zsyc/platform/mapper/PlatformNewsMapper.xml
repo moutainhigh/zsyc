@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.platform.mapper.PlatformNewsMapper">
+    <resultMap id="BaseResultMap" type="com.zsyc.platform.entity.PlatformNews">
+        <result column="id" property="id" jdbcType="INTEGER" />
+    </resultMap>
+
+    <update id="deleteNewsByIds" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update platform_news
+            <set>
+                is_del = 1
+            </set>
+            <set>
+                update_user_id = #{loginUserId}
+            </set>
+            <set>
+                update_time = now()
+            </set>
+            where id = #{item}
+        </foreach>
+    </update>
+
+
+    <select id="getPlatformNewsList"  resultMap="BaseResultMap">
+        select * from platform_news where is_del = 0 order by create_time desc
+    </select>
+</mapper>

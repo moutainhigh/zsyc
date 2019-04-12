@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.goods.mapper.GoodsCustomPriceMapper" >
+
+    <select id="selectCustomPriceList" resultType="com.zsyc.goods.vo.GoodsCustomPriceListVO">
+        select c.id,c.sku,c.address_id as addressId,c.price,c.is_del as isDel,c.store_id as storeId,
+               g.goods_type as goodsType,g.goods_name as goodsName,b.brand_name as brandName,g.status from goods_custom_price c inner join goods_info g on c.sku=g.sku inner join goods_brand_relation r on c.sku=r.sku
+               left join goods_brand b on r.brand_code = b.brand_code where g.is_del=#{is_del} and c.is_del=#{is_del} and c.store_id=#{store_id}
+        <if test="address_id != null">
+            and c.address_id=#{address_id}
+        </if>
+        <if test="sku != null">
+            and c.sku like concat(concat('%',#{address_id}),'%')
+        </if>
+        <if test="changeBeforePrice != null and changeAfterPrice==null">
+            <![CDATA[ and c.price >= #{changeBeforePrice}]]>
+        </if>
+        <if test="changeAfterPrice != null and changeBeforePrice==null">
+            <![CDATA[ and c.price <= #{changeAfterPrice}]]>
+        </if>
+        <if test="changeBeforePrice != null and changeAfterPrice!=null">
+            and c.price between #{changeBeforePrice} and #{changeAfterPrice}
+        </if>
+        <if test="beforeTime != null and afterTime==null">
+            <![CDATA[ and c.create_time >= #{beforeTime}]]>
+        </if>
+        <if test="afterTime != null and beforeTime==null">
+            <![CDATA[ and c.create_time <= #{afterTime}]]>
+        </if>
+        <if test="beforeTime != null and afterTime!=null">
+            and p.create_time between #{beforeTime} and #{afterTime}
+        </if>
+              and c.sku in
+        <foreach collection="skus" index="index" item="item" separator="," open="(" close=")">
+            #{item,jdbcType=VARCHAR}
+        </foreach>
+        order by c.create_time desc
+    </select>
+
+    <select id="selectCustomPriceInfo" resultType="com.zsyc.goods.vo.GoodsCustomPriceVO">
+        select c.id,c.sku,c.address_id as addressId,c.price,c.is_del as isDel,g.goods_type as goodsType,g.goods_name as goodsName,b.brand_name as brandName,
+               g.status from goods_custom_price c inner join goods_info g on c.sku=g.sku inner join goods_brand_relation r on c.sku=r.sku
+          left join goods_brand b on r.brand_code = b.brand_code where g.is_del=#{is_del}  and c.store_id=#{store_id} and c.is_del=#{is_del} and address_id=#{address_id}
+    </select>
+
+
+</mapper>

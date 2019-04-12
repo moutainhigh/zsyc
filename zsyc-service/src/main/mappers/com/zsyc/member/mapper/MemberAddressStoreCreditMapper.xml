@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.member.mapper.MemberAddressStoreCreditMapper" >
+    <resultMap id="BaseResultMap" type="com.zsyc.member.entity.MemberAddressStoreCredit" >
+        <result column="id" property="id" jdbcType="INTEGER" />
+    </resultMap>
+
+    <select id="getMemberStoreCreditList"  resultMap="BaseResultMap">
+        select masc.* from member_address_store_credit masc
+          join member_info mi
+          join member_address ma
+          join member_address_store mas
+          on mas.address_id = ma.id and mas.id = masc.member_address_store_id and mi.id = ma.member_id and mas.store_id = #{storeId}
+          <if test="name != null">
+            and mi.nick_name like  CONCAT( #{name}, '%')
+          </if>
+          <if test="telephone != null">
+            and mi.telephone like  CONCAT( #{telephone}, '%')
+          </if>
+          <if test="status != null">
+            and masc.status = #{status, jdbcType = VARCHAR}
+          </if>
+    </select>
+
+</mapper>

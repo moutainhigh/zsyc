@@ -1,0 +1,24 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head th:include="base/base :: baseHead(~{::title})">
+    <title>test title</title>
+</head>
+<div th:fragment="content">
+    <div id="pp">
+        <span v-cloak>{{a | make1}}</span>
+    </div>
+
+    <div id="pp2" v-for="item in records" v-if="records.length > 0">
+        <span v-cloak>{{item.name}}</span>
+    </div>
+
+    <div id="pp3" v-else>
+        <span v-cloak>{{item.name}}</span>
+    </div>
+</div>
+
+<body th:replace="base/base::footer"></body>
+
+<script src="/js/modules/module1/test.js"></script>
+
+</html>

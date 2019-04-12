@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.order.mapper.OrderSubInfoMapper" >
+
+    <insert id="createOrderSub" parameterType="list" useGeneratedKeys="true" keyProperty="id">
+        insert into order_sub_info(address_id,account_id,order_info_no,consignee_phone,order_no,amount,express_amount,actual_amount,
+        discount_amount,book_start_time,book_end_time,priority,coupon_id,photo,consignee,customer_remark,consignee_address,type,delivery_type,
+        store_id,postman_id,backend_remark,urge_time,create_time,create_user_id,update_time,update_user_id,is_del,order_status,rent_amount) values
+
+        <foreach collection="list" item="order" separator="," index="index">
+            (
+            #{order.addressId},#{order.accountId},#{order.orderInfoNo},#{order.consigneePhone},#{order.orderNo},#{order.amount},
+            #{order.expressAmount},#{order.actualAmount},#{order.discountAmount},#{order.bookStartTime},#{order.bookEndTime},
+            #{order.priority},#{order.couponId},#{order.photo},#{order.consignee},#{order.customerRemark},#{order.consigneeAddress},#{order.type},#{order.deliveryType},
+            #{order.storeId},#{order.postmanId},#{order.backendRemark},#{order.urgeTime},#{order.createTime},
+            #{order.createUserId},#{order.updateTime},#{order.updateUserId},#{order.isDel},#{order.orderStatus},#{order.rentAmount}
+            )
+        </foreach>
+    </insert>
+
+
+    <select id="getOrderSubIdByStoreId" resultType="java.lang.Long" parameterType="map">
+        select id from order_sub_info where store_id = #{storeId} and id in
+        <foreach collection="ls" item="id" separator="," index="index" open="(" close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getOrderinfosByTimeSlot" parameterType="com.zsyc.order.vo.OrderSubInfoVo" resultType="com.zsyc.order.po.OrderSubInfoPo">
+        SELECT sub.*,info.pay_type FROM `order_sub_info` as sub INNER JOIN order_info as info on (sub.order_info_no = info.order_no) where 1=1
+        <if test="storeId != null">
+            and sub.store_id = #{storeId}
+        </if>
+
+        <if test="orderStatus != null and orderStatus != ''">
+            and sub.order_status = #{orderStatus}
+        </if>
+
+        <if test="orderStartTime != null and orderEndTime != null">
+           and sub.create_time between #{orderStartTime} and #{orderEndTime}
+        </if>
+    </select>
+
+    <select id="getOrderSubinfos" resultType="com.zsyc.order.po.OrderSubInfoPo">
+        select * from order_sub_info where create_user_id = #{createUserId} and (order_status = 'PAID' or order_status = 'SEND' or order_status = 'SHORTAGE' or order_status = 'PACK' or order_status = 'BEENSTOCK' or order_status = 'PROCESSED' or order_status = 'DONE' or order_status = 'CONFIRMED') and is_del = 0 and type = #{type} order by update_time desc
+    </select>
+
+    <select id="getOrderSubById" parameterType="long" resultType="com.zsyc.order.po.OrderSubInfoPo">
+        SELECT sub.*,info.pay_type FROM `order_sub_info` as sub INNER JOIN order_info as info on (sub.order_info_no = info.order_no) where sub.id = #{id}
+    </select>
+
+    <select id="getAllOrderStatusCount" resultType="java.lang.Integer">
+        select count(1) from order_sub_info where create_user_id = #{memberId} and order_status = #{status}
+    </select>
+
+    <select id="getOldforNewOrderByStoreId" resultType="com.zsyc.order.po.OrderSubInfoPo">
+        select * from order_sub_info where store_id = #{orderSubInfoVo.storeId} and type = 'OLDFORNEW' and order_status = 'UNPAID' order by update_time desc
+    </select>
+
+    <select id="getOrderDataForReport" resultType="com.zsyc.order.po.OrderSubInfoPo">
+        SELECT store_id,SUM(actual_amount) as actual_amount from order_sub_info where datediff(#{now},create_time) = 1 GROUP BY store_id
+    </select>
+
+    <resultMap id="getOrderTakingListMap" type="com.zsyc.order.po.OrderSubInfoPo">
+        <id column="id" property="id"></id>
+        <result column="store_name" property="storeInfo.storeName"></result>
+        <result column="address" property="storeInfo.address"></result>
+        <result column="phone" property="storeInfo.phone"></result>
+        <result column="store_type_id" property="storeInfo.storeTypeId"></result>
+    </resultMap>
+
+    <select id="getOrderTakingList" resultMap="getOrderTakingListMap">
+          select o.*,s.store_name,s.address,s.phone,s.store_type_id,i.pay_type from order_sub_info as o inner join store_info as s INNER JOIN order_info AS i on (o.store_id = s.id AND o.order_info_no = i.order_no and o.postman_id is NULL and o.delivery_type = 'EXPRESS' and s.id in
+          <foreach collection="storeDeliveryRelations" open="(" close=")" separator="," index="index" item="store">
+              #{store.storeId}
+          </foreach>
+           and case when s.store_type_id = 0 or s.store_type_id = 1 then o.order_status in ('PAID','REFUND')
+          when s.store_type_id = 2 or s.store_type_id = 3 or s.store_type_id = 4 then o.order_status = 'PACK' end) ORDER BY o.priority DESC,o.update_time DESC
+    </select>
+
+    <select id="getOrderByPostmanIdAndStatus" resultMap="getOrderTakingListMap">
+        select o.*,s.store_name,s.address,s.phone,s.store_type_id,i.pay_type from order_sub_info as o inner join store_info as s INNER JOIN order_info AS i on (o.store_id = s.id AND o.order_info_no = i.order_no and o.postman_id = #{orderSubInfoVo.postmanId} and o.order_status = #{orderSubInfoVo.orderStatus})
+        ORDER BY o.priority DESC,o.update_time DESC
+    </select>
+
+
+    <select id="getNewOrderList" resultType="com.zsyc.order.po.OrderSubInfoPo">
+        select sub.* from  order_sub_info as sub INNER JOIN order_goods as g INNER JOIN goods_info as i on
+        (sub.id = g.order_sub_id and g.sku = i.sku and sub.store_id = #{storeId} and sub.type = 'ORDINARY' and sub.protocol_no is NULL
+        and sub.order_status = 'CONFIRMED' and sub.is_del = 0 and i.goods_type = 2)
+        GROUP BY g.order_sub_id ORDER BY sub.create_time ASC
+    </select>
+
+
+    <update id="delOrderSub" parameterType="map" >
+        update order_sub_info set is_del = 1 ,update_user_id = #{updateUserId},update_time = #{updateTime} where id in
+        <foreach collection="ids" item="id" index="index" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateOrderSubStatusByIds" parameterType="map">
+        update order_sub_info set order_status = #{status},update_time = #{updateTime} where id in
+        <foreach collection="ids" item="id" index="index" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateOrderSubStatus" parameterType="map">
+          update order_sub_info set order_status = #{status},update_time = #{updateTime} where id = #{orderId}
+    </update>
+
+    <update id="orderReminder" parameterType="map">
+        update order_sub_info set priority = priority + 1,urge_time = #{urgeTime},update_time = #{updateTime} where id = #{orderId}
+    </update>
+
+    <update id="orderReminderBack" parameterType="map">
+        update order_sub_info set priority = priority + 2,update_time = #{updateTime} where id = #{orderId}
+    </update>
+
+    <update id="updateOrderSubByOldforNew">
+        update order_sub_info set amount = #{orderSubInfoVo.amount},express_amount = #{orderSubInfoVo.expressAmount},actual_amount = #{orderSubInfoVo.actualAmount},rent_amount = #{orderSubInfoVo.rentAmount},
+        book_start_time = #{orderSubInfoVo.bookStartTime},book_end_time = #{orderSubInfoVo.bookEndTime},
+        type = #{orderSubInfoVo.type},order_status = #{orderSubInfoVo.orderStatus},
+        update_time = #{orderSubInfoVo.updateTime} where id = #{orderSubInfoVo.id}
+    </update>
+
+    <update id="updateOrdersubData">
+        update order_sub_info set consignee_phone = #{orderSubInfoVo.consigneePhone},consignee = #{orderSubInfoVo.consignee},
+        consignee_address = #{orderSubInfoVo.consigneeAddress},book_start_time = #{orderSubInfoVo.bookStartTime},
+        book_end_time = #{orderSubInfoVo.bookEndTime},order_status = #{orderSubInfoVo.orderStatus}
+        where id = #{orderSubInfoVo.id}
+    </update>
+
+    <update id="orderTaking">
+        update order_sub_info set postman_id = #{orderSubInfoVo.postmanId},order_status = #{orderSubInfoVo.orderStatus} where id = #{orderSubInfoVo.id}
+    </update>
+
+    <update id="updateProtocolNoOfOrderSub">
+        update order_sub_info set protocol_no = #{protocolNo} where id = #{orderId}
+    </update>
+
+</mapper>

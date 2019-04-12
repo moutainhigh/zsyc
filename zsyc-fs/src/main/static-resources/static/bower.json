@@ -1,0 +1,24 @@
+{
+  "name": "HT-BG",
+  "description": "BG",
+  "main": "index.js",
+  "authors": [
+    "Johnson"
+  ],
+  "license": "ISC",
+  "keywords": [
+    "ht"
+  ],
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "js-sha1": "^0.4.0"
+  }
+}

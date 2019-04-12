@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.goods.mapper.GoodsCategoryMapper" >
+
+
+    <update id="deleteByIdList">
+      update goods_category
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="is_del =case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    when id=#{item.id} then #{item.isDel}
+                </foreach>
+            </trim>
+        </trim>
+        where is_del=#{is_del} and id in
+        <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+            #{item.id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <select id="selectCategoryParentList" resultType="com.zsyc.goods.vo.GoodsCategoryTreeListVO">
+        select id,category_name as categoryName,parent_id as parentId,is_leaf as isLeaf,sort,is_del as isDel,tree_path as treePath,picture,category_type as categoryType
+        from goods_category where parent_id=#{parent_id} and is_del=#{is_del}
+    </select>
+
+    <select id="selectCategoryChildList" resultType="com.zsyc.goods.vo.GoodsCategoryTreeListVO">
+        select id,category_name as categoryName,parent_id as parentId,is_leaf as isLeaf,sort,is_del as isDel,tree_path as treePath,picture,category_type as categoryType
+        from goods_category where is_del=#{is_del}
+          <![CDATA[and parent_id<>#{parent_id} ]]>
+    </select>
+
+    <select id="selectGoodsCategoryList" resultType="com.zsyc.goods.vo.GoodsCategoryTreeListVO">
+        select id,category_name as categoryName,parent_id as parentId,is_leaf as isLeaf,sort,is_del as isDel,tree_path as treePath,picture,category_type as categoryType
+        from goods_category where is_del=#{is_del}
+    </select>
+
+    <select id="selectGoodsCategorySearchList" resultType="com.zsyc.goods.vo.GoodsCategoryTreeListVO">
+        select id,category_name as categoryName,parent_id as parentId,is_leaf as isLeaf,sort,is_del as isDel,tree_path as treePath,picture,category_type as categoryType
+        from goods_category where is_del=#{is_del}
+        <if test="id != null">
+            and id =#{id}
+        </if>
+        <if test="category_name != null">
+            and category_name like concat(concat('%',#{category_name}),'%')
+        </if>
+    </select>
+
+    <select id="selectGoodsCategoryInfoBySku" resultType="com.zsyc.goods.entity.GoodsCategory" parameterType="java.lang.String">
+        select c.id,c.category_name as categoryName,c.is_leaf as isLeaf,c.category_type as categoryType,c.is_del as isDel from goods_category c inner join goods_category_relation r on c.id=r.category_id
+        where r.sku=#{sku}
+    </select>
+</mapper>

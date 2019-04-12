@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.warehouse.mapper.WarehousePackOrderGoodsMapper">
+    <!--根据备货员id显示备货信息-->
+    <select id="checkOrdersubId" resultType="com.zsyc.warehouse.entity.WarehouseOrder">
+select * from warehouse_order where warehouse_staff_id=#{wareHouseId} and status="STOCKING"
+
+</select>
+
+    <select id="selectPackid" resultType="com.zsyc.warehouse.entity.WarehousePackOrderGoods">
+        select * from warehouse_pack_order_goods where warehouse_pack_order_id=#{packId}
+    </select>
+
+
+    <!--<select id="checkWareHouseDone" resultType="com.zsyc.warehouse.po.SortingOrderPo">-->
+
+
+    <!--</select>-->
+
+
+    <select id="selectWareHouseOrderGoodsss" resultType="com.zsyc.warehouse.entity.WarehousePackOrderGoods">
+        select * from warehouse_pack_order_goods where order_goods_id=#{gooodsId} and warehouse_order_goods_id=#{wareOrderGoodId}
+    </select>
+
+<select id="selectStaffOrderId" resultType="com.zsyc.warehouse.entity.WarehousePackOrder">
+    SELECT order_id FROM warehouse_pack_order,order_sub_info
+ WHERE warehouse_pack_order.`warehouse_order_id`=#{wareHouseId}
+AND warehouse_pack_order.`order_id`=order_sub_info.`id`
+</select>
+    <!--查找该备货员的备货信息-->
+    <select id="checkGoodsinfo" resultType="com.zsyc.warehouse.po.SortingOrderPo">
+SELECT warehouse_pack_order_goods.`order_goods_id` AS orderSubId,
+goods_info.`goods_name`,warehouse_order_goods.create_time,warehouse_order_goods.`message`
+,warehouse_order.warehouse_order_no AS warehouseOrderNo,
+warehouse_pack_order_goods.`num` AS num,
+warehouse_pack_order_goods.`unit` AS unit,
+warehouse_pack_order_goods.warehouse_pack_order_id AS warehousePackOrderId,
+warehouse_order.id As id
+
+FROM warehouse_order_goods,goods_info,warehouse_order,warehouse_pack_order_goods WHERE warehouse_order_id=#{wareHouseId}
+AND warehouse_order_goods.sku=goods_info.sku
+AND warehouse_order.id=warehouse_order_goods.warehouse_order_id
+
+
+ </select>
+
+    <select id="selectOrderSubIn" resultType="com.zsyc.order.entity.OrderSubInfo">
+        select  * from order_sub_info where id=#{subId}
+    </select>
+
+
+
+    <!--查询已备货好的子订单号(分拣端数据)-->
+    <select id="selectWarehouseDone" resultType="com.zsyc.warehouse.entity.WarehousePackOrder">
+      SELECT * FROM warehouse_pack_order WHERE STATUS="PENDDING" ;
+ </select>
+
+
+    <!--查询已备货好的子订单id的详细数据-->
+    <select id="selectDoneOrderGoods" resultType="com.zsyc.warehouse.po.WarehouseGoods">
+ SELECT * FROM order_goods,order_sub_info,goods_info,warehouse_pack_order
+  WHERE order_sub_info.`id`=#{subId}
+  AND order_goods.`order_sub_id`=order_sub_info.`id` AND goods_info.`sku` =order_goods.`sku`
+  AND warehouse_pack_order.`order_id`=order_sub_info.`id`
+  AND warehouse_pack_order.`status`="PENDDING"
+  ORDER BY book_start_time
+ </select>
+
+
+    <!--后台没有备货的点击完成按钮-->
+    <update id="updateWarehouseStauts">
+    update warehouse_pack_order_goods set status="DONE" where id=#{warehouseGoodsId}
+  </update>
+
+    <!--配送接单-->
+    <update id="distribution">
+  update order_sub_info set order_status="SEND",postman_id=#{postmanId} where id=#{subId}
+ </update>
+
+    <!--配送完成-->
+    <update id="distributionDone">
+    update order_sub_info set order_status="DONE",postman_id=#{postmanId} where id=#{subId}
+ </update>
+
+    <!--查找当前子订单id催单时间-->
+    <select id="urgeTime" resultType="com.zsyc.order.entity.OrderSubInfo">
+  select  priority,urge_time from order_sub_info where id=#{subId}
+ </select>
+
+    <!--更新当前时间-->
+    <update id="updateUrgeTime">
+  update  order_sub_info set urge_time=#{urgeTime},priority=#{priorityNum} where id=#{subId}
+ </update>
+
+    <!--查询当前分拣单分拣状态-->
+    <select id="wareHousePackOrderStatus" resultType="com.zsyc.warehouse.entity.WarehousePackOrder">
+    select  status from warehouse_pack_order where id=#{subId}
+ </select>
+
+
+    <!--查询分拣已完成分拣单-->
+    <select id="packOrderDone" resultType="com.zsyc.warehouse.po.WarehouseGoods">
+SELECT order_sub_info.`order_no` AS order_no,order_sub_info.`consignee_address` AS consigneeAddress,warehouse_pack_order.id AS id,
+order_sub_info.create_time as createTime
+
+FROM warehouse_pack_order,order_sub_info WHERE STATUS="DONE" AND warehouse_pack_order.warehouse_staff_id=#{staffId} AND warehouse_pack_order.`order_id`=order_sub_info.`id`
+GROUP BY id
+ </select>
+
+
+    <update id="delStockPack">
+        update warehouse_staff set is_del=2 where id=#{staffId}
+    </update>
+
+
+
+    <!--查询已完成的分拣单详情-->
+    <select id="selectStaffIdDone" resultType="com.zsyc.warehouse.entity.WarehousePackOrderGoods">
+      SELECT * FROM warehouse_pack_order_goods WHERE warehouse_pack_order_id=#{subId}
+ </select>
+
+    <select id="selectOrderInfoNo" resultType="com.zsyc.order.entity.OrderSubInfo">
+        select * from order_sub_info where id=#{subId}
+    </select>
+
+
+    <!--根据分拣员id和子订单id查询商品信息-->
+    <select id="selectPackOrder" resultType="com.zsyc.warehouse.entity.WarehousePackOrder">
+SELECT * FROM warehouse_pack_order WHERE warehouse_staff_id=#{staffId}
+AND warehouse_pack_order.`status`="RECEIVED"
+
+ </select>
+
+    <!--根据子id查地址id-->
+    <select id="selectAddress" resultType="com.zsyc.order.entity.OrderInfo">
+        select order_info.`address_id` as addressId,order_sub_info.order_no as orderNo,
+        order_sub_info.create_time as createTime
+
+        from order_info,order_sub_info where order_sub_info.id=#{subId} and order_sub_info.order_info_no=order_info.order_no
+    </select>
+
+
+
+
+    <update id="packOrderShortage">
+        UPDATE warehouse_pack_order_goods SET STATUS="SHORTAGE" WHERE id=#{warehousePackOrderGoodsId} and order_goods_id=#{subId}
+    </update>
+
+
+    <!--查找该分拣员的Id查询子订单id-->
+    <select id="selectPackStaffId" resultType="com.zsyc.warehouse.entity.WarehousePackOrder">
+  select  * from warehouse_pack_order where warehouse_staff_id=#{staffId}
+  and status="RECEIVED"
+  GROUP BY order_id
+ </select>
+
+
+    <!--分拣单中子订单完成按钮-->
+    <update id="wareHousePackStatusDone">
+update  warehouse_pack_order_goods set status="DONE" where order_goods_id=#{subId} and id=#{warehousePackOrderGoodsId}
+</update>
+    <select id="selectGoods" resultType="com.zsyc.order.entity.OrderGoods">
+        select * from order_goods where order_sub_id=#{subId}
+    </select>
+
+    <select id="selectOrderGoodsAll" resultType="com.zsyc.order.entity.OrderGoods">
+        select * from order_goods where id=#{goodsId}
+    </select>
+
+    <select id="updateStockPackName">
+        update warehouse_staff set stock_name=#{stockPackName} where id=#{id}
+    </select>
+
+
+
+</mapper>

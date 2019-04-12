@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.order.mapper.OrderInfoMapper" >
+
+    <select id="getOrderinfos" resultType="com.zsyc.order.po.OrderInfoPo">
+        select * from order_info where create_user_id = #{createUserId} and (order_status = 'UNPAID' or order_status = 'CANCEL') and is_del = 0 ORDER BY update_time desc
+    </select>
+
+    <select id="getAllOrderStatusCount" resultType="java.lang.Integer">
+        select count(1) from order_info where create_user_id = #{memberId} and order_status = #{status}
+    </select>
+
+    <update id="updateOrderInfoStatusById">
+        update order_info set order_status = #{status} ,update_user_id = #{memberId} ,
+        update_time = #{now} where id = #{orderId}
+    </update>
+
+    <update id="delOrderInfo">
+        update order_info set is_del = 1 , update_user_id = #{memberId} ,update_time = #{now} where id = #{orderId}
+    </update>
+
+    <update id="updateOrderByOldforNew">
+        update order_info set amount = #{amount},actual_amount = #{actualAmount},update_time = #{now} where order_no = #{orderNo}
+    </update>
+
+    <update id="callback">
+        update order_info set pay_flow_id = #{orderInfoPo.payFlowId},pay_flow_no = #{orderInfoPo.orderNo},pay_time = #{orderInfoPo.payTime} where order_no = #{orderInfoPo.orderNo}
+    </update>
+
+</mapper>

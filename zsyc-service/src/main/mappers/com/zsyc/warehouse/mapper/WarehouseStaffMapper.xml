@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zsyc.warehouse.mapper.WarehouseStaffMapper">
+
+    <select id="getWarehouseStaff" resultType="com.zsyc.warehouse.entity.WarehouseStaff">
+        SELECT ws.* FROM  warehouse_staff ws
+        <if test="storeId != null">
+            join store_warehouse_staff_relation sw on ws.id = sw.warehouse_staff_id
+            and sw.store_id = #{storeId}
+        </if>
+        <if test="name != null">
+            and ws.stock_name like  CONCAT( #{name}, '%')
+        </if>
+        <if test="phone != null">
+            and ws.phone like  CONCAT( #{phone}, '%')
+        </if>
+        <if test="stockType != null">
+            and ws.stock_type = #{stockType}
+        </if>
+            and ws.is_del = 0
+    </select>
+
+    <update id="deleteWarehouseStaff" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update warehouse_staff
+            <set>
+                is_del = 1
+            </set>
+            <set>
+                update_user_id = #{loginUserId}
+            </set>
+            <set>
+                update_time = now()
+            </set>
+            where id = #{item}
+        </foreach>
+    </update>
+
+
+
+    <select id="selectStockPack" resultType="com.zsyc.warehouse.entity.WarehouseStaff">
+        SELECT * FROM warehouse_staff,store_warehouse_staff_relation
+        WHERE store_warehouse_staff_relation.`warehouse_staff_id`=warehouse_staff.`id`
+
+
+      <if test="stockPackName!=null">
+          and warehouse_staff.stock_name=#{stockPackName}
+      </if>
+        <if test="phone!=null">
+            and warehouse_staff.phone=#{phone}
+        </if>
+        <if test="stockType!=null">
+            and warehouse_staff.stock_type=#{stockType}
+        </if>
+        <if test="IdNumber!=null">
+            and warehouse_staff.id_card=#{IdNumber}
+        </if>
+          and warehouse_staff.is_del=0
+
+      order by warehouse_staff.id DESC
+
+    </select>
+
+    <update id="updateStockPackName">
+       update warehouse_staff set update_time=NOW()
+      <if test="stockPackName!=null">
+      ,stock_name=#{stockPackName}
+      </if>
+        <if test="phone!=null">
+      ,phone=#{phone}
+        </if>
+        <if test="IdNumber!=null">
+      ,id_card=#{IdNumber}
+        </if>
+        <if test="idCardImg!=null">
+      ,id_card_img=#{idCardImg}
+        </if>
+       where id =#{id}
+    </update>
+
+
+
+
+</mapper>
